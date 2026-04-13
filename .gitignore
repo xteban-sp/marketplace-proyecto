@@ -1,0 +1,36 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+build/
+.gradle/
+
+# STS / Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
