@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="utf-8" />
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="globals.css">
+    <link rel="stylesheet" href="styleguide.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos adicionales solo para mensajes y loading (no rompen tu diseño) */
+        #message { min-height: 20px; font-size: 14px; text-align: center; margin: 8px 0; width: 388px; }
+        .error { color: #ef4444; }
+        .success { color: #22c55e; }
+        .frame-8:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<main class="login">
+    <div class="frame">
+        <div class="div">
+            <!-- Logo -->
+            <div class="frame-2" role="img" aria-label="Logo de la empresa"></div>
+
+            <!-- Login form section -->
+            <section class="frame-3">
+                <!-- Heading group -->
+                <div class="frame-4">
+                    <div class="frame-wrapper">
+                        <div class="type-wrapper">
+                            <h1 class="type">Bienvenido</h1>
+                        </div>
+                    </div>
+                    <div class="div-wrapper">
+                        <p class="text-wrapper">Ingrese sus credenciales para continuar</p>
+                    </div>
+                </div>
+
+                <!-- Form fields -->
+                <form id="loginForm" class="frame-5">
+                    <!-- Username field -->
+                    <label class="frame-6" for="username">
+                        <input class="text-wrapper-2" id="username" type="text" name="username" placeholder="Usuario" autocomplete="username" aria-label="Usuario" required />
+                    </label>
+
+                    <!-- Password field -->
+                    <label class="frame-7" for="password">
+                        <input class="text-wrapper-3" id="password" type="password" name="password" placeholder="Contraseña" autocomplete="current-password" aria-label="Contraseña" required />
+                        <button type="button" class="eye-slash-fill" aria-label="Mostrar u ocultar contraseña" onclick="togglePassword()">
+                            <img class="vector" src="img/vector.svg" alt="" aria-hidden="true" />
+                            <img class="img" src="img/image.svg" alt="" aria-hidden="true" />
+                        </button>
+                    </label>
+
+                    <!-- Mensaje de error/éxito -->
+                    <div id="message"></div>
+
+                    <!-- Submit button -->
+                    <button class="frame-8" type="submit" id="btnSubmit" aria-label="Iniciar Sesión">
+                        <span class="text-wrapper-4" id="btnText">Iniciar Sesión</span>
+                    </button>
+
+                    <!-- Forgot password link -->
+                    <img class="frame-9" src="img/frame-3.png" alt="¿Olvidaste la contraseña? Recuperar" />
+                </form>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Toggle mostrar/ocultar contraseña (tu función original)
+    function togglePassword() {
+        var passwordInput = document.getElementById('password');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+        } else {
+            passwordInput.type = 'password';
+        }
+    }
+
+    // ✅ Lógica de conexión con tu Auth Service
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('btnSubmit');
+        const btnText = document.getElementById('btnText');
+        const message = document.getElementById('message');
+
+        // Estado de carga
+        btn.disabled = true;
+        btnText.textContent = "Cargando...";
+        message.textContent = "";
+        message.className = "";
+
+        try {
+            const response = await fetch("http://localhost:8081/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Manejo de errores del backend
+                throw new Error(data.message || data.username || "Credenciales incorrectas");
+            }
+
+// ✅ Login exitoso: guardar token, rol y username
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("role", data.role);
+            localStorage.setItem("username", data.username); // Si tu backend lo devuelve
+
+            message.textContent = "✅ Sesión iniciada. Redirigiendo...";
+            message.className = "success";
+
+// Redirigir al dashboard después de 1 segundo
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        } catch (error) {
+            // Mostrar error al usuario
+            message.textContent = "❌ " + error.message;
+            message.className = "error";
+        } finally {
+            // Restaurar botón
+            btn.disabled = false;
+            btnText.textContent = "Iniciar Sesión";
+        }
+    });
+</script>
+</body>
+</html>
