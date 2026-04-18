@@ -11,10 +11,14 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User implements UserDetails {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(unique = true, nullable = false, length = 50)
@@ -27,7 +31,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(nullable = false)
-    private String role = "USER"; // "USER" o "ADMIN"
+    private String role = "USER";
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
