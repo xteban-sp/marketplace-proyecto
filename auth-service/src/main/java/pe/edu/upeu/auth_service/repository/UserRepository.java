@@ -8,7 +8,20 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
+
+    // Username
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
+
+    // Email
     boolean existsByEmail(String email);
+
+    // DNI 👈 NUEVO
+    boolean existsByDni(String dni);
+
+    // University code
+    boolean existsByUniversityCode(String universityCode);
+
+    // Phone 👈 NUEVO
+    boolean existsByPhone(String phone);
 }
