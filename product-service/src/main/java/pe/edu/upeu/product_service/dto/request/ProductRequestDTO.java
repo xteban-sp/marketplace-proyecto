@@ -1,37 +1,38 @@
 package pe.edu.upeu.product_service.dto.request;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductRequestDTO {
-    @NotBlank
-    private String titulo;
-    @NotBlank
-    private String descripcion;
-    @NotNull
-    @DecimalMin("0.10")
-    private BigDecimal precio;
-    @NotNull
-    @Min(0)
-    private Integer stock;
-    @NotBlank
-    private String usuarioVendedor;
-    @NotNull
-    private Long categoriaId;
 
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-    public BigDecimal getPrecio() { return precio; }
-    public void setPrecio(BigDecimal precio) { this.precio = precio; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
-    public String getUsuarioVendedor() { return usuarioVendedor; }
-    public void setUsuarioVendedor(String usuarioVendedor) { this.usuarioVendedor = usuarioVendedor; }
-    public Long getCategoriaId() { return categoriaId; }
-    public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+    @NotBlank(message = "El nombre del producto es obligatorio")
+    @Size(max = 150, message = "El nombre no puede superar los 150 caracteres")
+    private String name;
+
+    private String description;
+
+    @NotNull(message = "El precio es obligatorio")
+    @DecimalMin(value = "0.01", message = "El precio debe ser mayor a 0")
+    @Digits(integer = 8, fraction = 2, message = "Formato de precio inválido")
+    private BigDecimal price;
+
+    @NotNull(message = "El stock es obligatorio")
+    @Min(value = 0, message = "El stock no puede ser negativo")
+    private Integer stock;
+
+    @Size(max = 300, message = "La URL de imagen no puede superar los 300 caracteres")
+    private String imageUrl;
+
+    @NotNull(message = "El ID del vendedor es obligatorio")
+    private Long sellerId;
+
+    @NotNull(message = "El ID de categoría es obligatorio")
+    private Long categoryId;
 }
