@@ -18,6 +18,7 @@ import pe.edu.upeu.order_service.entity.PaymentStatus;
 import pe.edu.upeu.order_service.service.OrderService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -55,5 +56,15 @@ public class OrderController {
     @PatchMapping("/{id}/payment-status")
     public OrderResponse updatePaymentStatus(@PathVariable UUID id, @RequestParam PaymentStatus paymentStatus) {
         return orderService.updatePaymentStatus(id, paymentStatus);
+    }
+
+    @GetMapping("/{id}/users/{userId}/review-eligible")
+    public Map<String, Boolean> isReviewEligible(@PathVariable UUID id, @PathVariable UUID userId) {
+        return Map.of("eligible", orderService.isReviewEnabled(id, userId));
+    }
+
+    @GetMapping("/{id}/usuarios/{usuarioId}/resena-habilitada")
+    public Map<String, Boolean> isResenaHabilitada(@PathVariable UUID id, @PathVariable UUID usuarioId) {
+        return Map.of("habilitada", orderService.isReviewEnabled(id, usuarioId));
     }
 }

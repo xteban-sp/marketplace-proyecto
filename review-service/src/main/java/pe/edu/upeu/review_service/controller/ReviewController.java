@@ -31,7 +31,12 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<ReviewResponse> byProduct(@RequestParam Long productId) {
-        return reviewService.byProduct(productId);
+    public List<ReviewResponse> byProduct(@RequestParam(required = false) Long productId,
+                                          @RequestParam(required = false) Long productoId) {
+        Long objetivo = productoId != null ? productoId : productId;
+        if (objetivo == null) {
+            throw new IllegalArgumentException("Debe enviar productId o productoId");
+        }
+        return reviewService.byProduct(objetivo);
     }
 }

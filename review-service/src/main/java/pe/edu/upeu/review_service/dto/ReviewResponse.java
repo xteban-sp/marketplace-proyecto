@@ -1,14 +1,15 @@
 package pe.edu.upeu.review_service.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class ReviewResponse {
     private Long id;
-    private Long orderId;
-    private Long productId;
-    private String username;
-    private Integer rating;
-    private String comment;
+    private UUID pedidoId;
+    private Long productoId;
+    private UUID usuarioId;
+    private Integer puntuacion;
+    private String comentario;
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -19,44 +20,44 @@ public class ReviewResponse {
         this.id = id;
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getUsername() {
-        return username;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Integer getRating() {
-        return rating;
+    public Integer getPuntuacion() {
+        return puntuacion;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setPuntuacion(Integer puntuacion) {
+        this.puntuacion = puntuacion;
     }
 
-    public String getComment() {
-        return comment;
+    public String getComentario() {
+        return comentario;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
     }
 
     public LocalDateTime getCreatedAt() {

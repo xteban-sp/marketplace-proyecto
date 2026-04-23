@@ -20,7 +20,7 @@ import pe.edu.upeu.auth_service.security.JwtUtil;
 import java.util.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping({"/auth", "/api/auth"})
 @RequiredArgsConstructor
 @Tag(name = "Auth", description = "Autenticación y registro de usuarios")
 public class AuthController {
@@ -140,5 +140,38 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("valid", false, "error", "Error interno al validar token"));
         }
+    }
+
+    @GetMapping("/users/{username}")
+    @Operation(summary = "Obtener usuario por username", description = "Devuelve datos basicos para integracion entre microservicios")
+    public ResponseEntity<Map<String, Object>> getUserByUsername(@PathVariable String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "roles", new ArrayList<>(user.getRoles()),
+                "enabled", user.isEnabled()
+        ));
+    }
+
+    @PatchMapping("/users/{username}/seller")
+    @Operation(summary = "Habilitar rol SELLER", description = "Permite que un usuario registrado pueda vender productos")
+    public ResponseEntity<Map<String, Object>> enableSellerRole(@PathVariable String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Set<String> roles = new HashSet<>(user.getRoles());
+        roles.add("SELLER");
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "username", user.getUsername(),
+                "roles", new ArrayList<>(user.getRoles()),
+                "message", "Rol SELLER habilitado"
+        ));
     }
 }

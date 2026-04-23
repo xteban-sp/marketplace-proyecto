@@ -1,66 +1,74 @@
 package pe.edu.upeu.review_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.UUID;
+
 public class CreateReviewRequest {
 
     @NotNull
-    private Long orderId;
+    @JsonAlias("orderId")
+    private UUID pedidoId;
 
     @NotNull
-    private Long productId;
+    @JsonAlias("productId")
+    private Long productoId;
 
-    @NotBlank
-    private String username;
+    @NotNull
+    @JsonAlias("username")
+    private UUID usuarioId;
 
     @NotNull
     @Min(1)
     @Max(5)
-    private Integer rating;
+    @JsonAlias("rating")
+    private Integer puntuacion;
 
     @NotBlank
-    private String comment;
+    @JsonAlias("comment")
+    private String comentario;
 
-    public Long getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getUsername() {
-        return username;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Integer getRating() {
-        return rating;
+    public Integer getPuntuacion() {
+        return puntuacion;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setPuntuacion(Integer puntuacion) {
+        this.puntuacion = puntuacion;
     }
 
-    public String getComment() {
-        return comment;
+    public String getComentario() {
+        return comentario;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
     }
 }

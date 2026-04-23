@@ -1,20 +1,52 @@
 package pe.edu.upeu.payment_service.event;
 
-public class PaymentEvent {
-    private Long paymentId;
-    private Long orderId;
-    private Long productId;
-    private String buyerUsername;
-    private String status;
+import java.math.BigDecimal;
+import java.util.UUID;
 
-    public Long getPaymentId() { return paymentId; }
-    public void setPaymentId(Long paymentId) { this.paymentId = paymentId; }
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
-    public String getBuyerUsername() { return buyerUsername; }
-    public void setBuyerUsername(String buyerUsername) { this.buyerUsername = buyerUsername; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+public class PaymentEvent {
+    private UUID paymentId;
+    private UUID orderId;
+    private UUID buyerId;
+    private String status;
+    private BigDecimal amount;
+
+    public UUID getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(UUID paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+
+    public UUID getBuyerId() {
+        return buyerId;
+    }
+
+    public void setBuyerId(UUID buyerId) {
+        this.buyerId = buyerId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
 }

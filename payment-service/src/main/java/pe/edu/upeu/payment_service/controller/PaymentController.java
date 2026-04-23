@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -48,5 +49,12 @@ public class PaymentController {
     @PatchMapping("/{id}/status")
     public PaymentResponse updateStatus(@PathVariable UUID id, @RequestParam PaymentStatus status) {
         return paymentService.updateStatus(id, status);
+    }
+
+    @PostMapping("/webhook/mercadopago")
+    public PaymentResponse webhookMercadoPago(@RequestParam String externalReference,
+                                              @RequestParam String status,
+                                              @RequestHeader(value = "x-signature", required = false) String signature) {
+        return paymentService.procesarWebhookMercadoPago(externalReference, status);
     }
 }

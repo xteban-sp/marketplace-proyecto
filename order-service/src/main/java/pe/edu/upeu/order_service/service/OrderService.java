@@ -1,7 +1,9 @@
 package pe.edu.upeu.order_service.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import pe.edu.upeu.order_service.client.ProductClient;
 import pe.edu.upeu.order_service.dto.CreateOrderRequest;
 import pe.edu.upeu.order_service.dto.OrderItemRequest;
 import pe.edu.upeu.order_service.dto.OrderItemResponse;
@@ -14,18 +16,29 @@ import pe.edu.upeu.order_service.repository.OrderRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductClient productClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository,
+                        ProductClient productClient,
+                        KafkaTemplate<String, Object> kafkaTemplate) {
         this.orderRepository = orderRepository;
+        this.productClient = productClient;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public OrderResponse create(CreateOrderRequest request) {
+        if (request.getBuyerId().equals(request.getSellerId())) {
+            throw new IllegalArgumentException("Un usuario no puede comprarse a si mismo");
+        }
+
         Order order = new Order();
         order.setBuyerId(request.getBuyerId());
         order.setSellerId(request.getSellerId());
@@ -34,6 +47,16 @@ public class OrderService {
 
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItemRequest itemRequest : request.getItems()) {
+            Map<String, Object> producto = productClient.getProduct(itemRequest.getProductId());
+            if (producto == null || producto.isEmpty()) {
+                throw new EntityNotFoundException("No se encontro el producto con id: " + itemRequest.getProductId());
+            }
+
+            Number stockDisponible = (Number) producto.get("stock");
+            if (stockDisponible != null && itemRequest.getQuantity() > stockDisponible.intValue()) {
+                throw new IllegalArgumentException("No hay stock suficiente para el producto " + itemRequest.getProductId());
+            }
+
             OrderItem item = new OrderItem();
             item.setOrder(order);
             item.setProductId(itemRequest.getProductId());
@@ -46,7 +69,17 @@ public class OrderService {
         }
 
         order.setTotalAmount(total);
-        return toResponse(orderRepository.save(order));
+        Order guardada = orderRepository.save(order);
+
+        Map<String, Object> evento = Map.of(
+                "pedidoId", guardada.getId().toString(),
+                "compradorId", guardada.getBuyerId().toString(),
+                "vendedorId", guardada.getSellerId().toString(),
+                "total", guardada.getTotalAmount()
+        );
+        kafkaTemplate.send("pedido-creado", guardada.getId().toString(), evento);
+
+        return toResponse(guardada);
     }
 
     public OrderResponse findById(UUID id) {
@@ -76,6 +109,11 @@ public class OrderService {
             order.setStatus(OrderStatus.PAID);
         }
         return toResponse(orderRepository.save(order));
+    }
+
+    public boolean isReviewEnabled(UUID orderId, UUID userId) {
+        Order order = getEntity(orderId);
+        return order.getBuyerId().equals(userId) && order.getPaymentStatus() == PaymentStatus.APPROVED;
     }
 
     private Order getEntity(UUID id) {

@@ -1,19 +1,43 @@
 package pe.edu.upeu.order_service.event;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class OrderCreatedEvent {
-    private Long orderId;
-    private Long productId;
-    private String buyerUsername;
-    private BigDecimal amount;
+    private UUID orderId;
+    private UUID buyerId;
+    private UUID sellerId;
+    private BigDecimal total;
 
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
-    public String getBuyerUsername() { return buyerUsername; }
-    public void setBuyerUsername(String buyerUsername) { this.buyerUsername = buyerUsername; }
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+
+    public UUID getBuyerId() {
+        return buyerId;
+    }
+
+    public void setBuyerId(UUID buyerId) {
+        this.buyerId = buyerId;
+    }
+
+    public UUID getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(UUID sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
 }

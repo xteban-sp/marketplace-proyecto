@@ -2,13 +2,14 @@ package pe.edu.upeu.recommendation_service.service;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import pe.edu.upeu.recommendation_service.dto.CreateRecommendationRequest;
 import pe.edu.upeu.recommendation_service.dto.RecommendationResponse;
-import pe.edu.upeu.recommendation_service.model.RecommendationEntity;
+import pe.edu.upeu.recommendation_service.entity.Recommendation;
 import pe.edu.upeu.recommendation_service.repository.RecommendationRepository;
+
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class RecommendationService {
@@ -19,46 +20,35 @@ public class RecommendationService {
         this.recommendationRepository = recommendationRepository;
     }
 
-    @Cacheable(value = "recommendations", key = "#username")
-    public List<RecommendationResponse> byUser(String username) {
-        return recommendationRepository.findByUsernameOrderByScoreDesc(username)
+    @CacheEvict(value = "recommendations", key = "#request.userId")
+    public RecommendationResponse upsert(CreateRecommendationRequest request) {
+        Recommendation recommendation = recommendationRepository
+                .findByUserIdAndProductId(request.getUserId(), request.getProductId())
+                .orElseGet(Recommendation::new);
+
+        recommendation.setUserId(request.getUserId());
+        recommendation.setProductId(request.getProductId());
+        recommendation.setScore(request.getScore());
+        recommendation.setSource(request.getSource());
+        return toResponse(recommendationRepository.save(recommendation));
+    }
+
+    @Cacheable(value = "recommendations", key = "#userId")
+    public List<RecommendationResponse> listByUser(UUID userId) {
+        return recommendationRepository.findTop20ByUserIdOrderByScoreDesc(userId)
                 .stream()
-                .limit(20)
                 .map(this::toResponse)
                 .toList();
     }
 
-    @KafkaListener(topics = "payment-approved", groupId = "recommendation-service")
-    @CacheEvict(value = "recommendations", key = "#event['buyerUsername']")
-    public void onPaymentApproved(Map<String, Object> event) {
-        Object usernameObj = event.get("buyerUsername");
-        Object productObj = event.get("productId");
-
-        if (usernameObj == null || productObj == null) {
-            return;
-        }
-
-        String username = usernameObj.toString();
-        Long productId = Long.valueOf(productObj.toString());
-
-        RecommendationEntity current = recommendationRepository
-                .findByUsernameAndProductId(username, productId)
-                .orElseGet(() -> {
-                    RecommendationEntity e = new RecommendationEntity();
-                    e.setUsername(username);
-                    e.setProductId(productId);
-                    e.setScore(0);
-                    return e;
-                });
-
-        current.setScore(current.getScore() + 1);
-        recommendationRepository.save(current);
-    }
-
-    private RecommendationResponse toResponse(RecommendationEntity entity) {
+    private RecommendationResponse toResponse(Recommendation recommendation) {
         RecommendationResponse response = new RecommendationResponse();
-        response.setProductId(entity.getProductId());
-        response.setScore(entity.getScore());
+        response.setId(recommendation.getId());
+        response.setUserId(recommendation.getUserId());
+        response.setProductId(recommendation.getProductId());
+        response.setScore(recommendation.getScore());
+        response.setSource(recommendation.getSource());
+        response.setUpdatedAt(recommendation.getUpdatedAt());
         return response;
     }
 }

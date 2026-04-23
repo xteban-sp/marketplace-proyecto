@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "reviews")
@@ -18,19 +19,19 @@ public class ReviewEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Long orderId;
+    private UUID pedidoId;
 
     @Column(nullable = false)
-    private Long productId;
+    private Long productoId;
 
     @Column(nullable = false)
-    private String username;
+    private UUID usuarioId;
 
     @Column(nullable = false)
-    private Integer rating;
+    private Integer puntuacion;
 
     @Column(nullable = false, length = 1200)
-    private String comment;
+    private String comentario;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -48,44 +49,44 @@ public class ReviewEntity {
         this.id = id;
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getUsername() {
-        return username;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Integer getRating() {
-        return rating;
+    public Integer getPuntuacion() {
+        return puntuacion;
     }
 
-    public void setRating(Integer rating) {
-        this.rating = rating;
+    public void setPuntuacion(Integer puntuacion) {
+        this.puntuacion = puntuacion;
     }
 
-    public String getComment() {
-        return comment;
+    public String getComentario() {
+        return comentario;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
     }
 
     public LocalDateTime getCreatedAt() {
