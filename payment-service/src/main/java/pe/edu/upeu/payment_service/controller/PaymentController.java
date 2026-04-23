@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/pagos")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -42,8 +42,8 @@ public class PaymentController {
     }
 
     @GetMapping
-    public List<PaymentResponse> findByOrder(@RequestParam UUID orderId) {
-        return paymentService.findByOrder(orderId);
+    public List<PaymentResponse> findByOrder(@RequestParam UUID pedidoId) {
+        return paymentService.findByOrder(pedidoId);
     }
 
     @PatchMapping("/{id}/status")

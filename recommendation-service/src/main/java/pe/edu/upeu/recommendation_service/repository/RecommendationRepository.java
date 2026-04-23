@@ -8,6 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RecommendationRepository extends JpaRepository<Recommendation, UUID> {
-    List<Recommendation> findTop20ByUserIdOrderByScoreDesc(UUID userId);
-    Optional<Recommendation> findByUserIdAndProductId(UUID userId, Long productId);
+    List<Recommendation> findTop20ByUsuarioIdOrderByPuntajeDesc(UUID usuarioId);
+    Optional<Recommendation> findByUsuarioIdAndProductoId(UUID usuarioId, Long productoId);
 }

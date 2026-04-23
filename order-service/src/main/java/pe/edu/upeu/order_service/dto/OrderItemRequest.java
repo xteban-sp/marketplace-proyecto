@@ -10,10 +10,10 @@ import java.math.BigDecimal;
 public class OrderItemRequest {
 
     @NotNull
-    private Long productId;
+    private Long productoId;
 
     @NotBlank
-    private String productTitle;
+    private String tituloProducto;
 
     @NotNull
     @Min(1)
@@ -21,22 +21,22 @@ public class OrderItemRequest {
 
     @NotNull
     @DecimalMin("0.10")
-    private BigDecimal unitPrice;
+    private BigDecimal precioUnitario;
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getProductTitle() {
-        return productTitle;
+    public String getTituloProducto() {
+        return tituloProducto;
     }
 
-    public void setProductTitle(String productTitle) {
-        this.productTitle = productTitle;
+    public void setTituloProducto(String tituloProducto) {
+        this.tituloProducto = tituloProducto;
     }
 
     public Integer getQuantity() {
@@ -47,11 +47,11 @@ public class OrderItemRequest {
         this.quantity = quantity;
     }
 
-    public BigDecimal getUnitPrice() {
-        return unitPrice;
+    public BigDecimal getPrecioUnitario() {
+        return precioUnitario;
     }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
-        this.unitPrice = unitPrice;
+    public void setPrecioUnitario(BigDecimal precioUnitario) {
+        this.precioUnitario = precioUnitario;
     }
 }

@@ -9,36 +9,36 @@ import java.util.UUID;
 public class CreatePaymentRequest {
 
     @NotNull
-    private UUID orderId;
+    private UUID pedidoId;
 
     @NotNull
-    private UUID buyerId;
+    private UUID compradorId;
 
     @NotNull
     @DecimalMin("0.10")
-    private BigDecimal amount;
+    private BigDecimal monto;
 
-    public UUID getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(UUID orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getMonto() {
+        return monto;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setMonto(BigDecimal monto) {
+        this.monto = monto;
     }
 }

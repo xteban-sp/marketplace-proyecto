@@ -3,26 +3,26 @@ package pe.edu.upeu.order_service.dto;
 import java.math.BigDecimal;
 
 public class OrderItemResponse {
-    private Long productId;
-    private String productTitle;
+    private Long productoId;
+    private String tituloProducto;
     private Integer quantity;
-    private BigDecimal unitPrice;
+    private BigDecimal precioUnitario;
     private BigDecimal subtotal;
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getProductTitle() {
-        return productTitle;
+    public String getTituloProducto() {
+        return tituloProducto;
     }
 
-    public void setProductTitle(String productTitle) {
-        this.productTitle = productTitle;
+    public void setTituloProducto(String tituloProducto) {
+        this.tituloProducto = tituloProducto;
     }
 
     public Integer getQuantity() {
@@ -33,12 +33,12 @@ public class OrderItemResponse {
         this.quantity = quantity;
     }
 
-    public BigDecimal getUnitPrice() {
-        return unitPrice;
+    public BigDecimal getPrecioUnitario() {
+        return precioUnitario;
     }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
-        this.unitPrice = unitPrice;
+    public void setPrecioUnitario(BigDecimal precioUnitario) {
+        this.precioUnitario = precioUnitario;
     }
 
     public BigDecimal getSubtotal() {

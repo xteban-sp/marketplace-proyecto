@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/notificaciones")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -35,8 +35,8 @@ public class NotificationController {
     }
 
     @GetMapping
-    public List<NotificationResponse> listByUser(@RequestParam UUID userId) {
-        return notificationService.findByUser(userId);
+    public List<NotificationResponse> listByUser(@RequestParam UUID usuarioId) {
+        return notificationService.findByUser(usuarioId);
     }
 
     @PatchMapping("/{id}/read")

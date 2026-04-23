@@ -9,7 +9,7 @@ import java.util.UUID;
 @FeignClient(name = "order-service")
 public interface OrderClient {
 
-    @GetMapping("/api/orders/{id}/users/{userId}/review-eligible")
+    @GetMapping("/api/pedidos/{id}/users/{userId}/review-eligible")
     Map<String, Boolean> isReviewEligible(@PathVariable("id") UUID orderId,
                                           @PathVariable("userId") UUID userId);
 }

@@ -51,11 +51,11 @@ public class ProductService {
     }
 
     public List<ProductResponseDTO> search(String query) {
-        return productRepository.findByTitleContainingIgnoreCase(query).stream().map(ProductMapper::toResponse).toList();
+        return productRepository.findByTituloContainingIgnoreCase(query).stream().map(ProductMapper::toResponse).toList();
     }
 
-    public List<ProductResponseDTO> findByCategory(Long categoryId) {
-        return productRepository.findByCategoryId(categoryId).stream().map(ProductMapper::toResponse).toList();
+    public List<ProductResponseDTO> findByCategory(Long categoriaId) {
+        return productRepository.findByCategoriaId(categoriaId).stream().map(ProductMapper::toResponse).toList();
     }
 
     private Product getEntity(Long id) {
@@ -63,11 +63,11 @@ public class ProductService {
     }
 
     private void applyRequest(Product entity, ProductRequestDTO request) {
-        entity.setTitle(request.getTitle().trim());
-        entity.setDescription(request.getDescription().trim());
-        entity.setPrice(request.getPrice());
+        entity.setTitulo(request.getTitulo().trim());
+        entity.setDescripcion(request.getDescripcion().trim());
+        entity.setPrecio(request.getPrecio());
         entity.setStock(request.getStock());
-        entity.setSellerUsername(request.getSellerUsername().trim());
-        entity.setCategory(categoryService.getEntity(request.getCategoryId()));
+        entity.setUsuarioVendedor(request.getUsuarioVendedor().trim());
+        entity.setCategoria(categoryService.getEntity(request.getCategoriaId()));
     }
 }

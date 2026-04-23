@@ -23,11 +23,11 @@ public class NotificationEventListener {
         String pedidoId = String.valueOf(payload.get("pedidoId"));
 
         CreateNotificationRequest request = new CreateNotificationRequest();
-        request.setUserId(UUID.fromString(compradorId));
-        request.setType(NotificationType.ORDER);
-        request.setTitle("Pedido creado");
-        request.setMessage("Tu pedido fue creado correctamente y esta pendiente de pago.");
-        request.setReferenceId(pedidoId);
+        request.setUsuarioId(UUID.fromString(compradorId));
+        request.setTipo(NotificationType.ORDER);
+        request.setTitulo("Pedido creado");
+        request.setMensaje("Tu pedido fue creado correctamente y esta pendiente de pago.");
+        request.setReferenciaId(pedidoId);
         notificationService.create(request);
     }
 
@@ -46,11 +46,11 @@ public class NotificationEventListener {
         String pagoId = String.valueOf(payload.get("pagoId"));
 
         CreateNotificationRequest request = new CreateNotificationRequest();
-        request.setUserId(UUID.fromString(compradorId));
-        request.setType(NotificationType.PAYMENT);
-        request.setTitle(titulo);
-        request.setMessage(mensaje);
-        request.setReferenceId(pagoId);
+        request.setUsuarioId(UUID.fromString(compradorId));
+        request.setTipo(NotificationType.PAYMENT);
+        request.setTitulo(titulo);
+        request.setMensaje(mensaje);
+        request.setReferenciaId(pagoId);
         notificationService.create(request);
     }
 }

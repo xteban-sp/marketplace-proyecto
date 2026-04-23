@@ -11,13 +11,13 @@ public final class ProductMapper {
     public static ProductResponseDTO toResponse(Product entity) {
         ProductResponseDTO dto = new ProductResponseDTO();
         dto.setId(entity.getId());
-        dto.setTitle(entity.getTitle());
-        dto.setDescription(entity.getDescription());
-        dto.setPrice(entity.getPrice());
+        dto.setTitulo(entity.getTitulo());
+        dto.setDescripcion(entity.getDescripcion());
+        dto.setPrecio(entity.getPrecio());
         dto.setStock(entity.getStock());
-        dto.setSellerUsername(entity.getSellerUsername());
-        dto.setCategoryId(entity.getCategory().getId());
-        dto.setCategoryName(entity.getCategory().getName());
+        dto.setUsuarioVendedor(entity.getUsuarioVendedor());
+        dto.setCategoriaId(entity.getCategoria().getId());
+        dto.setCategoriaNombre(entity.getCategoria().getNombre());
         return dto;
     }
 }

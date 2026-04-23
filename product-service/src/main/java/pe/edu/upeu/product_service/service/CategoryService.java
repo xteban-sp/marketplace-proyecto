@@ -20,7 +20,7 @@ public class CategoryService {
 
     public CategoryResponseDTO create(CategoryRequestDTO request) {
         Category category = new Category();
-        category.setName(request.getName().trim());
+        category.setNombre(request.getNombre().trim());
         return CategoryMapper.toResponse(categoryRepository.save(category));
     }
 

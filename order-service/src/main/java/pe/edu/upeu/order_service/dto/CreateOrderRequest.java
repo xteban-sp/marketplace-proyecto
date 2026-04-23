@@ -10,29 +10,29 @@ import java.util.UUID;
 public class CreateOrderRequest {
 
     @NotNull
-    private UUID buyerId;
+    private UUID compradorId;
 
     @NotNull
-    private UUID sellerId;
+    private UUID vendedorId;
 
     @Valid
     @NotEmpty
     private List<OrderItemRequest> items;
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public UUID getSellerId() {
-        return sellerId;
+    public UUID getVendedorId() {
+        return vendedorId;
     }
 
-    public void setSellerId(UUID sellerId) {
-        this.sellerId = sellerId;
+    public void setVendedorId(UUID vendedorId) {
+        this.vendedorId = vendedorId;
     }
 
     public List<OrderItemRequest> getItems() {

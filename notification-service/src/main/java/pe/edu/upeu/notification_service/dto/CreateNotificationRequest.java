@@ -9,56 +9,56 @@ import java.util.UUID;
 public class CreateNotificationRequest {
 
     @NotNull
-    private UUID userId;
+    private UUID usuarioId;
 
     @NotNull
-    private NotificationType type;
+    private NotificationType tipo;
 
     @NotBlank
-    private String title;
+    private String titulo;
 
     @NotBlank
-    private String message;
+    private String mensaje;
 
-    private String referenceId;
+    private String referenciaId;
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public NotificationType getType() {
-        return type;
+    public NotificationType getTipo() {
+        return tipo;
     }
 
-    public void setType(NotificationType type) {
-        this.type = type;
+    public void setTipo(NotificationType tipo) {
+        this.tipo = tipo;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitulo() {
+        return titulo;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMensaje() {
+        return mensaje;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
     }
 
-    public String getReferenceId() {
-        return referenceId;
+    public String getReferenciaId() {
+        return referenciaId;
     }
 
-    public void setReferenceId(String referenceId) {
-        this.referenceId = referenceId;
+    public void setReferenciaId(String referenciaId) {
+        this.referenciaId = referenciaId;
     }
 }

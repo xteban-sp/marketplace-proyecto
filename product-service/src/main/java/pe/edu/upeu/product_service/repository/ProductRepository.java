@@ -5,6 +5,6 @@ import pe.edu.upeu.product_service.entity.Product;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByCategoryId(Long categoryId);
-    List<Product> findByTitleContainingIgnoreCase(String query);
+    List<Product> findByCategoriaId(Long categoriaId);
+    List<Product> findByTituloContainingIgnoreCase(String consulta);
 }

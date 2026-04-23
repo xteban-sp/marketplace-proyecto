@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/recommendations")
+@RequestMapping("/api/recomendaciones")
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
@@ -33,7 +33,7 @@ public class RecommendationController {
     }
 
     @GetMapping
-    public List<RecommendationResponse> listByUser(@RequestParam UUID userId) {
-        return recommendationService.listByUser(userId);
+    public List<RecommendationResponse> listByUser(@RequestParam UUID usuarioId) {
+        return recommendationService.listByUser(usuarioId);
     }
 }

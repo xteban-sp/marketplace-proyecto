@@ -31,22 +31,22 @@ public class PaymentService {
     }
 
     public PaymentResponse create(CreatePaymentRequest request) {
-        Map<String, Object> pedido = orderClient.getOrder(request.getOrderId());
+        Map<String, Object> pedido = orderClient.getOrder(request.getPedidoId());
         if (pedido == null || pedido.isEmpty()) {
             throw new EntityNotFoundException("No se encontro el pedido asociado al pago");
         }
 
         Payment payment = new Payment();
-        payment.setOrderId(request.getOrderId());
-        payment.setBuyerId(request.getBuyerId());
-        payment.setAmount(request.getAmount());
-        payment.setProvider(PaymentProvider.MERCADO_PAGO);
-        payment.setStatus(PaymentStatus.PENDING);
+        payment.setPedidoId(request.getPedidoId());
+        payment.setCompradorId(request.getCompradorId());
+        payment.setMonto(request.getMonto());
+        payment.setProveedor(PaymentProvider.MERCADO_PAGO);
+        payment.setEstado(PaymentStatus.PENDING);
 
-        String reference = "mp-order-" + request.getOrderId();
-        payment.setExternalReference(reference);
-        payment.setPreferenceId(UUID.randomUUID().toString());
-        payment.setCheckoutUrl("https://www.mercadopago.com/checkout/v1/redirect?pref_id=" + payment.getPreferenceId());
+        String reference = "mp-order-" + request.getPedidoId();
+        payment.setReferenciaExterna(reference);
+        payment.setPreferenciaId(UUID.randomUUID().toString());
+        payment.setUrlCheckout("https://www.mercadopago.com/checkout/v1/redirect?pref_id=" + payment.getPreferenciaId());
 
         return toResponse(paymentRepository.save(payment));
     }
@@ -56,20 +56,20 @@ public class PaymentService {
     }
 
     public List<PaymentResponse> findByOrder(UUID orderId) {
-        return paymentRepository.findByOrderId(orderId).stream().map(this::toResponse).toList();
+        return paymentRepository.findByPedidoId(orderId).stream().map(this::toResponse).toList();
     }
 
     public PaymentResponse updateStatus(UUID id, PaymentStatus status) {
         Payment payment = getEntity(id);
-        payment.setStatus(status);
+        payment.setEstado(status);
         Payment guardado = paymentRepository.save(payment);
 
         if (status == PaymentStatus.APPROVED) {
-            orderClient.updatePaymentStatus(guardado.getOrderId(), "APPROVED");
+            orderClient.updatePaymentStatus(guardado.getPedidoId(), "APPROVED");
             kafkaTemplate.send("pago-aprobado", guardado.getId().toString(), construirEvento(guardado));
         }
         if (status == PaymentStatus.FAILED) {
-            orderClient.updatePaymentStatus(guardado.getOrderId(), "FAILED");
+            orderClient.updatePaymentStatus(guardado.getPedidoId(), "FAILED");
             kafkaTemplate.send("pago-fallido", guardado.getId().toString(), construirEvento(guardado));
         }
 
@@ -77,7 +77,7 @@ public class PaymentService {
     }
 
     public PaymentResponse procesarWebhookMercadoPago(String externalReference, String status) {
-        Payment payment = paymentRepository.findByExternalReference(externalReference)
+        Payment payment = paymentRepository.findByReferenciaExterna(externalReference)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontro pago para la referencia externa: " + externalReference));
 
         PaymentStatus newStatus;
@@ -100,14 +100,14 @@ public class PaymentService {
     private PaymentResponse toResponse(Payment payment) {
         PaymentResponse response = new PaymentResponse();
         response.setId(payment.getId());
-        response.setOrderId(payment.getOrderId());
-        response.setBuyerId(payment.getBuyerId());
-        response.setAmount(payment.getAmount());
-        response.setProvider(payment.getProvider());
-        response.setStatus(payment.getStatus());
-        response.setExternalReference(payment.getExternalReference());
-        response.setPreferenceId(payment.getPreferenceId());
-        response.setCheckoutUrl(payment.getCheckoutUrl());
+        response.setPedidoId(payment.getPedidoId());
+        response.setCompradorId(payment.getCompradorId());
+        response.setMonto(payment.getMonto());
+        response.setProveedor(payment.getProveedor());
+        response.setEstado(payment.getEstado());
+        response.setReferenciaExterna(payment.getReferenciaExterna());
+        response.setPreferenciaId(payment.getPreferenciaId());
+        response.setUrlCheckout(payment.getUrlCheckout());
         response.setCreatedAt(payment.getCreatedAt());
         return response;
     }
@@ -115,10 +115,10 @@ public class PaymentService {
     private Map<String, Object> construirEvento(Payment payment) {
         return Map.of(
                 "pagoId", payment.getId().toString(),
-                "pedidoId", payment.getOrderId().toString(),
-                "compradorId", payment.getBuyerId().toString(),
-                "estado", payment.getStatus().name(),
-                "monto", payment.getAmount()
+                "pedidoId", payment.getPedidoId().toString(),
+                "compradorId", payment.getCompradorId().toString(),
+                "estado", payment.getEstado().name(),
+                "monto", payment.getMonto()
         );
     }
 }

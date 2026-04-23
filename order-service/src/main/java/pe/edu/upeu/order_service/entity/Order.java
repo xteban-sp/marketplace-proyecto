@@ -19,30 +19,30 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "pedidos")
 public class Order {
 
     @Id
     private UUID id;
 
     @Column(nullable = false)
-    private UUID buyerId;
+    private UUID compradorId;
 
     @Column(nullable = false)
-    private UUID sellerId;
+    private UUID vendedorId;
 
     @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal totalAmount;
+    private BigDecimal montoTotal;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private OrderStatus status;
+    private OrderStatus estado;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PaymentStatus paymentStatus;
+    private PaymentStatus estadoPago;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items = new ArrayList<>();
 
     @Column(nullable = false)
@@ -56,11 +56,11 @@ public class Order {
         if (id == null) {
             id = UUID.randomUUID();
         }
-        if (status == null) {
-            status = OrderStatus.CREATED;
+        if (estado == null) {
+            estado = OrderStatus.CREATED;
         }
-        if (paymentStatus == null) {
-            paymentStatus = PaymentStatus.PENDING;
+        if (estadoPago == null) {
+            estadoPago = PaymentStatus.PENDING;
         }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
@@ -79,44 +79,44 @@ public class Order {
         this.id = id;
     }
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public UUID getSellerId() {
-        return sellerId;
+    public UUID getVendedorId() {
+        return vendedorId;
     }
 
-    public void setSellerId(UUID sellerId) {
-        this.sellerId = sellerId;
+    public void setVendedorId(UUID vendedorId) {
+        this.vendedorId = vendedorId;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public BigDecimal getMontoTotal() {
+        return montoTotal;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setMontoTotal(BigDecimal montoTotal) {
+        this.montoTotal = montoTotal;
     }
 
-    public OrderStatus getStatus() {
-        return status;
+    public OrderStatus getEstado() {
+        return estado;
     }
 
-    public void setStatus(OrderStatus status) {
-        this.status = status;
+    public void setEstado(OrderStatus estado) {
+        this.estado = estado;
     }
 
-    public PaymentStatus getPaymentStatus() {
-        return paymentStatus;
+    public PaymentStatus getEstadoPago() {
+        return estadoPago;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
+    public void setEstadoPago(PaymentStatus estadoPago) {
+        this.estadoPago = estadoPago;
     }
 
     public List<OrderItem> getItems() {

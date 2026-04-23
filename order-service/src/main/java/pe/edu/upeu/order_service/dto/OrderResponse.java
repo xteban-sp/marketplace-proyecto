@@ -11,11 +11,11 @@ import java.util.UUID;
 public class OrderResponse {
 
     private UUID id;
-    private UUID buyerId;
-    private UUID sellerId;
-    private BigDecimal totalAmount;
-    private OrderStatus status;
-    private PaymentStatus paymentStatus;
+    private UUID compradorId;
+    private UUID vendedorId;
+    private BigDecimal montoTotal;
+    private OrderStatus estado;
+    private PaymentStatus estadoPago;
     private List<OrderItemResponse> items;
     private LocalDateTime createdAt;
 
@@ -27,44 +27,44 @@ public class OrderResponse {
         this.id = id;
     }
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public UUID getSellerId() {
-        return sellerId;
+    public UUID getVendedorId() {
+        return vendedorId;
     }
 
-    public void setSellerId(UUID sellerId) {
-        this.sellerId = sellerId;
+    public void setVendedorId(UUID vendedorId) {
+        this.vendedorId = vendedorId;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public BigDecimal getMontoTotal() {
+        return montoTotal;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setMontoTotal(BigDecimal montoTotal) {
+        this.montoTotal = montoTotal;
     }
 
-    public OrderStatus getStatus() {
-        return status;
+    public OrderStatus getEstado() {
+        return estado;
     }
 
-    public void setStatus(OrderStatus status) {
-        this.status = status;
+    public void setEstado(OrderStatus estado) {
+        this.estado = estado;
     }
 
-    public PaymentStatus getPaymentStatus() {
-        return paymentStatus;
+    public PaymentStatus getEstadoPago() {
+        return estadoPago;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
+    public void setEstadoPago(PaymentStatus estadoPago) {
+        this.estadoPago = estadoPago;
     }
 
     public List<OrderItemResponse> getItems() {

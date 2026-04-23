@@ -21,17 +21,17 @@ public class NotificationService {
 
     public NotificationResponse create(CreateNotificationRequest request) {
         Notification notification = new Notification();
-        notification.setUserId(request.getUserId());
-        notification.setType(request.getType());
-        notification.setTitle(request.getTitle().trim());
-        notification.setMessage(request.getMessage().trim());
-        notification.setReferenceId(request.getReferenceId());
-        notification.setReadFlag(false);
+        notification.setUsuarioId(request.getUsuarioId());
+        notification.setTipo(request.getTipo());
+        notification.setTitulo(request.getTitulo().trim());
+        notification.setMensaje(request.getMensaje().trim());
+        notification.setReferenciaId(request.getReferenciaId());
+        notification.setLeida(false);
         return toResponse(notificationRepository.save(notification));
     }
 
-    public List<NotificationResponse> findByUser(UUID userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+    public List<NotificationResponse> findByUser(UUID usuarioId) {
+        return notificationRepository.findByUsuarioIdOrderByCreatedAtDesc(usuarioId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -40,19 +40,19 @@ public class NotificationService {
     public NotificationResponse markAsRead(UUID id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontro la notificacion: " + id));
-        notification.setReadFlag(true);
+        notification.setLeida(true);
         return toResponse(notificationRepository.save(notification));
     }
 
     private NotificationResponse toResponse(Notification notification) {
         NotificationResponse response = new NotificationResponse();
         response.setId(notification.getId());
-        response.setUserId(notification.getUserId());
-        response.setType(notification.getType());
-        response.setTitle(notification.getTitle());
-        response.setMessage(notification.getMessage());
-        response.setReferenceId(notification.getReferenceId());
-        response.setReadFlag(notification.isReadFlag());
+        response.setUsuarioId(notification.getUsuarioId());
+        response.setTipo(notification.getTipo());
+        response.setTitulo(notification.getTitulo());
+        response.setMensaje(notification.getMensaje());
+        response.setReferenciaId(notification.getReferenciaId());
+        response.setLeida(notification.isLeida());
         response.setCreatedAt(notification.getCreatedAt());
         return response;
     }

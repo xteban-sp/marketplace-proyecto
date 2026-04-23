@@ -4,49 +4,49 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class PaymentEvent {
-    private UUID paymentId;
-    private UUID orderId;
-    private UUID buyerId;
-    private String status;
-    private BigDecimal amount;
+    private UUID pagoId;
+    private UUID pedidoId;
+    private UUID compradorId;
+    private String estado;
+    private BigDecimal monto;
 
-    public UUID getPaymentId() {
-        return paymentId;
+    public UUID getPagoId() {
+        return pagoId;
     }
 
-    public void setPaymentId(UUID paymentId) {
-        this.paymentId = paymentId;
+    public void setPagoId(UUID pagoId) {
+        this.pagoId = pagoId;
     }
 
-    public UUID getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(UUID orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public String getStatus() {
-        return status;
+    public String getEstado() {
+        return estado;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getMonto() {
+        return monto;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setMonto(BigDecimal monto) {
+        this.monto = monto;
     }
 }

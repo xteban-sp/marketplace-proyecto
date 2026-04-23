@@ -14,7 +14,7 @@ import pe.edu.upeu.product_service.service.CategoryService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api/categorias")
 public class CategoryController {
 
     private final CategoryService categoryService;

@@ -12,30 +12,30 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "notificaciones")
 public class Notification {
 
     @Id
     private UUID id;
 
     @Column(nullable = false)
-    private UUID userId;
+    private UUID usuarioId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private NotificationType type;
+    private NotificationType tipo;
 
     @Column(nullable = false, length = 140)
-    private String title;
+    private String titulo;
 
     @Column(nullable = false, length = 1000)
-    private String message;
+    private String mensaje;
 
     @Column(length = 100)
-    private String referenceId;
+    private String referenciaId;
 
     @Column(nullable = false)
-    private boolean readFlag;
+    private boolean leida;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -56,52 +56,52 @@ public class Notification {
         this.id = id;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public NotificationType getType() {
-        return type;
+    public NotificationType getTipo() {
+        return tipo;
     }
 
-    public void setType(NotificationType type) {
-        this.type = type;
+    public void setTipo(NotificationType tipo) {
+        this.tipo = tipo;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitulo() {
+        return titulo;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMensaje() {
+        return mensaje;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMensaje(String mensaje) {
+        this.mensaje = mensaje;
     }
 
-    public String getReferenceId() {
-        return referenceId;
+    public String getReferenciaId() {
+        return referenciaId;
     }
 
-    public void setReferenceId(String referenceId) {
-        this.referenceId = referenceId;
+    public void setReferenciaId(String referenciaId) {
+        this.referenciaId = referenciaId;
     }
 
-    public boolean isReadFlag() {
-        return readFlag;
+    public boolean isLeida() {
+        return leida;
     }
 
-    public void setReadFlag(boolean readFlag) {
-        this.readFlag = readFlag;
+    public void setLeida(boolean leida) {
+        this.leida = leida;
     }
 
     public LocalDateTime getCreatedAt() {

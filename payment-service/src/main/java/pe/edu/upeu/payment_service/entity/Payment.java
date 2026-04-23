@@ -14,37 +14,37 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "payments")
+@Table(name = "pagos")
 public class Payment {
 
     @Id
     private UUID id;
 
     @Column(nullable = false)
-    private UUID orderId;
+    private UUID pedidoId;
 
     @Column(nullable = false)
-    private UUID buyerId;
+    private UUID compradorId;
 
     @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal amount;
+    private BigDecimal monto;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PaymentProvider provider;
+    private PaymentProvider proveedor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PaymentStatus status;
+    private PaymentStatus estado;
 
     @Column(length = 120)
-    private String externalReference;
+    private String referenciaExterna;
 
     @Column(length = 120)
-    private String preferenceId;
+    private String preferenciaId;
 
     @Column(length = 300)
-    private String checkoutUrl;
+    private String urlCheckout;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -57,11 +57,11 @@ public class Payment {
         if (id == null) {
             id = UUID.randomUUID();
         }
-        if (provider == null) {
-            provider = PaymentProvider.MERCADO_PAGO;
+        if (proveedor == null) {
+            proveedor = PaymentProvider.MERCADO_PAGO;
         }
-        if (status == null) {
-            status = PaymentStatus.PENDING;
+        if (estado == null) {
+            estado = PaymentStatus.PENDING;
         }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
@@ -80,68 +80,68 @@ public class Payment {
         this.id = id;
     }
 
-    public UUID getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(UUID orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getMonto() {
+        return monto;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setMonto(BigDecimal monto) {
+        this.monto = monto;
     }
 
-    public PaymentProvider getProvider() {
-        return provider;
+    public PaymentProvider getProveedor() {
+        return proveedor;
     }
 
-    public void setProvider(PaymentProvider provider) {
-        this.provider = provider;
+    public void setProveedor(PaymentProvider proveedor) {
+        this.proveedor = proveedor;
     }
 
-    public PaymentStatus getStatus() {
-        return status;
+    public PaymentStatus getEstado() {
+        return estado;
     }
 
-    public void setStatus(PaymentStatus status) {
-        this.status = status;
+    public void setEstado(PaymentStatus estado) {
+        this.estado = estado;
     }
 
-    public String getExternalReference() {
-        return externalReference;
+    public String getReferenciaExterna() {
+        return referenciaExterna;
     }
 
-    public void setExternalReference(String externalReference) {
-        this.externalReference = externalReference;
+    public void setReferenciaExterna(String referenciaExterna) {
+        this.referenciaExterna = referenciaExterna;
     }
 
-    public String getPreferenceId() {
-        return preferenceId;
+    public String getPreferenciaId() {
+        return preferenciaId;
     }
 
-    public void setPreferenceId(String preferenceId) {
-        this.preferenceId = preferenceId;
+    public void setPreferenciaId(String preferenciaId) {
+        this.preferenciaId = preferenciaId;
     }
 
-    public String getCheckoutUrl() {
-        return checkoutUrl;
+    public String getUrlCheckout() {
+        return urlCheckout;
     }
 
-    public void setCheckoutUrl(String checkoutUrl) {
-        this.checkoutUrl = checkoutUrl;
+    public void setUrlCheckout(String urlCheckout) {
+        this.urlCheckout = urlCheckout;
     }
 
     public LocalDateTime getCreatedAt() {

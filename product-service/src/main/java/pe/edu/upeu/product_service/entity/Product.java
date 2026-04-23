@@ -12,39 +12,39 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "products")
+@Table(name = "productos")
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String title;
+    private String titulo;
     @Column(nullable = false, length = 1000)
-    private String description;
+    private String descripcion;
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    private BigDecimal precio;
     @Column(nullable = false)
     private Integer stock;
     @Column(nullable = false)
-    private String sellerUsername;
+    private String usuarioVendedor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Category categoria;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public BigDecimal getPrecio() { return precio; }
+    public void setPrecio(BigDecimal precio) { this.precio = precio; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
-    public String getSellerUsername() { return sellerUsername; }
-    public void setSellerUsername(String sellerUsername) { this.sellerUsername = sellerUsername; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    public String getUsuarioVendedor() { return usuarioVendedor; }
+    public void setUsuarioVendedor(String usuarioVendedor) { this.usuarioVendedor = usuarioVendedor; }
+    public Category getCategoria() { return categoria; }
+    public void setCategoria(Category categoria) { this.categoria = categoria; }
 }

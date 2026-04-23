@@ -20,12 +20,12 @@ public class RecommendationEventListener {
     @KafkaListener(topics = "resena-creada", groupId = "recommendation-service")
     public void onResenaCreada(Map<String, Object> payload) {
         CreateRecommendationRequest request = new CreateRecommendationRequest();
-        request.setUserId(UUID.fromString(String.valueOf(payload.get("usuarioId"))));
-        request.setProductId(Long.valueOf(String.valueOf(payload.get("productoId"))));
+        request.setUsuarioId(UUID.fromString(String.valueOf(payload.get("usuarioId"))));
+        request.setProductoId(Long.valueOf(String.valueOf(payload.get("productoId"))));
 
         double puntuacion = Double.parseDouble(String.valueOf(payload.get("puntuacion")));
-        request.setScore(puntuacion * 20.0);
-        request.setSource(RecommendationSource.PURCHASE_HISTORY);
+        request.setPuntaje(puntuacion * 20.0);
+        request.setFuente(RecommendationSource.PURCHASE_HISTORY);
 
         recommendationService.upsert(request);
     }

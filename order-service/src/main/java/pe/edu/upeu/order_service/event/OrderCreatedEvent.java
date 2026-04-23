@@ -4,33 +4,33 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class OrderCreatedEvent {
-    private UUID orderId;
-    private UUID buyerId;
-    private UUID sellerId;
+    private UUID pedidoId;
+    private UUID compradorId;
+    private UUID vendedorId;
     private BigDecimal total;
 
-    public UUID getOrderId() {
-        return orderId;
+    public UUID getPedidoId() {
+        return pedidoId;
     }
 
-    public void setOrderId(UUID orderId) {
-        this.orderId = orderId;
+    public void setPedidoId(UUID pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
-    public UUID getBuyerId() {
-        return buyerId;
+    public UUID getCompradorId() {
+        return compradorId;
     }
 
-    public void setBuyerId(UUID buyerId) {
-        this.buyerId = buyerId;
+    public void setCompradorId(UUID compradorId) {
+        this.compradorId = compradorId;
     }
 
-    public UUID getSellerId() {
-        return sellerId;
+    public UUID getVendedorId() {
+        return vendedorId;
     }
 
-    public void setSellerId(UUID sellerId) {
-        this.sellerId = sellerId;
+    public void setVendedorId(UUID vendedorId) {
+        this.vendedorId = vendedorId;
     }
 
     public BigDecimal getTotal() {

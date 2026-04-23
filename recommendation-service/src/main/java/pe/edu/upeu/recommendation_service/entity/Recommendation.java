@@ -13,24 +13,24 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "recommendations")
+@Table(name = "recomendaciones")
 public class Recommendation {
 
     @Id
     private UUID id;
 
     @Column(nullable = false)
-    private UUID userId;
+    private UUID usuarioId;
 
     @Column(nullable = false)
-    private Long productId;
+    private Long productoId;
 
     @Column(nullable = false)
-    private Double score;
+    private Double puntaje;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
-    private RecommendationSource source;
+    private RecommendationSource fuente;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -60,36 +60,36 @@ public class Recommendation {
         this.id = id;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public Double getScore() {
-        return score;
+    public Double getPuntaje() {
+        return puntaje;
     }
 
-    public void setScore(Double score) {
-        this.score = score;
+    public void setPuntaje(Double puntaje) {
+        this.puntaje = puntaje;
     }
 
-    public RecommendationSource getSource() {
-        return source;
+    public RecommendationSource getFuente() {
+        return fuente;
     }
 
-    public void setSource(RecommendationSource source) {
-        this.source = source;
+    public void setFuente(RecommendationSource fuente) {
+        this.fuente = fuente;
     }
 
     public LocalDateTime getCreatedAt() {

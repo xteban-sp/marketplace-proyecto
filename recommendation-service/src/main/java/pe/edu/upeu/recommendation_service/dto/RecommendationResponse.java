@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public class RecommendationResponse {
     private UUID id;
-    private UUID userId;
-    private Long productId;
-    private Double score;
-    private RecommendationSource source;
+    private UUID usuarioId;
+    private Long productoId;
+    private Double puntaje;
+    private RecommendationSource fuente;
     private LocalDateTime updatedAt;
 
     public UUID getId() {
@@ -21,36 +21,36 @@ public class RecommendationResponse {
         this.id = id;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public UUID getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setUsuarioId(UUID usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public Double getScore() {
-        return score;
+    public Double getPuntaje() {
+        return puntaje;
     }
 
-    public void setScore(Double score) {
-        this.score = score;
+    public void setPuntaje(Double puntaje) {
+        this.puntaje = puntaje;
     }
 
-    public RecommendationSource getSource() {
-        return source;
+    public RecommendationSource getFuente() {
+        return fuente;
     }
 
-    public void setSource(RecommendationSource source) {
-        this.source = source;
+    public void setFuente(RecommendationSource fuente) {
+        this.fuente = fuente;
     }
 
     public LocalDateTime getUpdatedAt() {

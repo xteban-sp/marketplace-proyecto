@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/pedidos")
 public class OrderController {
 
     private final OrderService orderService;
@@ -43,19 +43,19 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<OrderResponse> findAll(@RequestParam(required = false) UUID buyerId,
-                                       @RequestParam(required = false) UUID sellerId) {
-        return orderService.findAll(buyerId, sellerId);
+    public List<OrderResponse> findAll(@RequestParam(required = false) UUID compradorId,
+                                       @RequestParam(required = false) UUID vendedorId) {
+        return orderService.findAll(compradorId, vendedorId);
     }
 
-    @PatchMapping("/{id}/status")
-    public OrderResponse updateStatus(@PathVariable UUID id, @RequestParam OrderStatus status) {
-        return orderService.updateStatus(id, status);
+    @PatchMapping("/{id}/estado")
+    public OrderResponse updateStatus(@PathVariable UUID id, @RequestParam OrderStatus estado) {
+        return orderService.updateStatus(id, estado);
     }
 
-    @PatchMapping("/{id}/payment-status")
-    public OrderResponse updatePaymentStatus(@PathVariable UUID id, @RequestParam PaymentStatus paymentStatus) {
-        return orderService.updatePaymentStatus(id, paymentStatus);
+    @PatchMapping("/{id}/estado-pago")
+    public OrderResponse updatePaymentStatus(@PathVariable UUID id, @RequestParam PaymentStatus estadoPago) {
+        return orderService.updatePaymentStatus(id, estadoPago);
     }
 
     @GetMapping("/{id}/users/{userId}/review-eligible")

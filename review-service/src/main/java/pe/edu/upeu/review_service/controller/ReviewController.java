@@ -15,7 +15,7 @@ import pe.edu.upeu.review_service.service.ReviewService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reviews")
+@RequestMapping("/api/resenas")
 public class ReviewController {
 
     private final ReviewService reviewService;

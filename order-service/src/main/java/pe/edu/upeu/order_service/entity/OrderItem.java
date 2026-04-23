@@ -13,7 +13,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "order_items")
+@Table(name = "detalles_pedido")
 public class OrderItem {
 
     @Id
@@ -21,20 +21,20 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    @JoinColumn(name = "pedido_id", nullable = false)
+    private Order pedido;
 
     @Column(nullable = false)
-    private Long productId;
+    private Long productoId;
 
     @Column(nullable = false, length = 180)
-    private String productTitle;
+    private String tituloProducto;
 
     @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal unitPrice;
+    private BigDecimal precioUnitario;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal;
@@ -47,28 +47,28 @@ public class OrderItem {
         this.id = id;
     }
 
-    public Order getOrder() {
-        return order;
+    public Order getPedido() {
+        return pedido;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setPedido(Order pedido) {
+        this.pedido = pedido;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Long getProductoId() {
+        return productoId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
     }
 
-    public String getProductTitle() {
-        return productTitle;
+    public String getTituloProducto() {
+        return tituloProducto;
     }
 
-    public void setProductTitle(String productTitle) {
-        this.productTitle = productTitle;
+    public void setTituloProducto(String tituloProducto) {
+        this.tituloProducto = tituloProducto;
     }
 
     public Integer getQuantity() {
@@ -79,12 +79,12 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public BigDecimal getUnitPrice() {
-        return unitPrice;
+    public BigDecimal getPrecioUnitario() {
+        return precioUnitario;
     }
 
-    public void setUnitPrice(BigDecimal unitPrice) {
-        this.unitPrice = unitPrice;
+    public void setPrecioUnitario(BigDecimal precioUnitario) {
+        this.precioUnitario = precioUnitario;
     }
 
     public BigDecimal getSubtotal() {

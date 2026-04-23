@@ -8,30 +8,30 @@ import java.math.BigDecimal;
 
 public class ProductRequestDTO {
     @NotBlank
-    private String title;
+    private String titulo;
     @NotBlank
-    private String description;
+    private String descripcion;
     @NotNull
     @DecimalMin("0.10")
-    private BigDecimal price;
+    private BigDecimal precio;
     @NotNull
     @Min(0)
     private Integer stock;
     @NotBlank
-    private String sellerUsername;
+    private String usuarioVendedor;
     @NotNull
-    private Long categoryId;
+    private Long categoriaId;
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public BigDecimal getPrecio() { return precio; }
+    public void setPrecio(BigDecimal precio) { this.precio = precio; }
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
-    public String getSellerUsername() { return sellerUsername; }
-    public void setSellerUsername(String sellerUsername) { this.sellerUsername = sellerUsername; }
-    public Long getCategoryId() { return categoryId; }
-    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public String getUsuarioVendedor() { return usuarioVendedor; }
+    public void setUsuarioVendedor(String usuarioVendedor) { this.usuarioVendedor = usuarioVendedor; }
+    public Long getCategoriaId() { return categoriaId; }
+    public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
 }

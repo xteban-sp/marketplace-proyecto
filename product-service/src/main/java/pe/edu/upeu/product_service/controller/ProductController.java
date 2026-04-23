@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/productos")
 public class ProductController {
 
     private final ProductService productService;
@@ -37,18 +37,18 @@ public class ProductController {
     public ProductResponseDTO create(@Valid @RequestBody ProductRequestDTO request,
                                      @RequestHeader("Authorization") String token) {
         String username = validarRolVendedor(token);
-        request.setSellerUsername(username);
+        request.setUsuarioVendedor(username);
         return productService.create(request);
     }
 
     @GetMapping
     public List<ProductResponseDTO> list(@RequestParam(required = false) String q,
-                                         @RequestParam(required = false) Long categoryId) {
+                                         @RequestParam(required = false) Long categoriaId) {
         if (q != null && !q.isBlank()) {
             return productService.search(q);
         }
-        if (categoryId != null) {
-            return productService.findByCategory(categoryId);
+        if (categoriaId != null) {
+            return productService.findByCategory(categoriaId);
         }
         return productService.findAll();
     }
@@ -63,7 +63,7 @@ public class ProductController {
                                      @Valid @RequestBody ProductRequestDTO request,
                                      @RequestHeader("Authorization") String token) {
         String username = validarRolVendedor(token);
-        request.setSellerUsername(username);
+        request.setUsuarioVendedor(username);
         return productService.update(id, request);
     }
 

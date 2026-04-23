@@ -20,22 +20,22 @@ public class RecommendationService {
         this.recommendationRepository = recommendationRepository;
     }
 
-    @CacheEvict(value = "recommendations", key = "#request.userId")
+    @CacheEvict(value = "recommendations", key = "#request.usuarioId")
     public RecommendationResponse upsert(CreateRecommendationRequest request) {
         Recommendation recommendation = recommendationRepository
-                .findByUserIdAndProductId(request.getUserId(), request.getProductId())
+                .findByUsuarioIdAndProductoId(request.getUsuarioId(), request.getProductoId())
                 .orElseGet(Recommendation::new);
 
-        recommendation.setUserId(request.getUserId());
-        recommendation.setProductId(request.getProductId());
-        recommendation.setScore(request.getScore());
-        recommendation.setSource(request.getSource());
+        recommendation.setUsuarioId(request.getUsuarioId());
+        recommendation.setProductoId(request.getProductoId());
+        recommendation.setPuntaje(request.getPuntaje());
+        recommendation.setFuente(request.getFuente());
         return toResponse(recommendationRepository.save(recommendation));
     }
 
-    @Cacheable(value = "recommendations", key = "#userId")
-    public List<RecommendationResponse> listByUser(UUID userId) {
-        return recommendationRepository.findTop20ByUserIdOrderByScoreDesc(userId)
+    @Cacheable(value = "recommendations", key = "#usuarioId")
+    public List<RecommendationResponse> listByUser(UUID usuarioId) {
+        return recommendationRepository.findTop20ByUsuarioIdOrderByPuntajeDesc(usuarioId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -44,10 +44,10 @@ public class RecommendationService {
     private RecommendationResponse toResponse(Recommendation recommendation) {
         RecommendationResponse response = new RecommendationResponse();
         response.setId(recommendation.getId());
-        response.setUserId(recommendation.getUserId());
-        response.setProductId(recommendation.getProductId());
-        response.setScore(recommendation.getScore());
-        response.setSource(recommendation.getSource());
+        response.setUsuarioId(recommendation.getUsuarioId());
+        response.setProductoId(recommendation.getProductoId());
+        response.setPuntaje(recommendation.getPuntaje());
+        response.setFuente(recommendation.getFuente());
         response.setUpdatedAt(recommendation.getUpdatedAt());
         return response;
     }

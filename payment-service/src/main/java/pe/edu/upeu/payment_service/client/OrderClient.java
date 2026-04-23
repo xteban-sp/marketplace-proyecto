@@ -11,10 +11,10 @@ import java.util.UUID;
 @FeignClient(name = "order-service")
 public interface OrderClient {
 
-    @GetMapping("/api/orders/{id}")
+    @GetMapping("/api/pedidos/{id}")
     Map<String, Object> getOrder(@PathVariable("id") UUID id);
 
-    @PatchMapping("/api/orders/{id}/payment-status")
+    @PatchMapping("/api/pedidos/{id}/estado-pago")
     Map<String, Object> updatePaymentStatus(@PathVariable("id") UUID id,
-                                            @RequestParam("paymentStatus") String paymentStatus);
+                                            @RequestParam("estadoPago") String estadoPago);
 }
