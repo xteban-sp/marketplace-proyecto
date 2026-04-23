@@ -1,4 +1,7 @@
 package pe.edu.upeu.product_service.repository;
 
-public interface CategoryRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import pe.edu.upeu.product_service.entity.Category;
+
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 }
