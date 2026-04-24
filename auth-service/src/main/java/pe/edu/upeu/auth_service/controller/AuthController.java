@@ -1,5 +1,6 @@
 package pe.edu.upeu.auth_service.controller;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -173,5 +175,35 @@ public class AuthController {
                 "roles", new ArrayList<>(user.getRoles()),
                 "message", "Rol SELLER habilitado"
         ));
+    }
+
+    // Método de demo para Circuit Breaker:
+    @GetMapping("/health/external")
+    @CircuitBreaker(name = "auth-service", fallbackMethod = "healthFallback")
+    @Operation(summary = "Health check con Circuit Breaker", description = "Demo de resiliencia para Unidad 2")
+    public ResponseEntity<Map<String, Object>> checkExternalHealth() {
+        // Simula llamada a otro servicio (ej: Notification Service)
+        // En producción: notificationClient.ping()
+        return ResponseEntity.ok(Map.of("status", "UP", "service", "external-dependency"));
+    }
+
+    // Fallback method (se ejecuta si el circuito está abierto)
+    public ResponseEntity<Map<String, Object>> healthFallback(Throwable t) {
+        return ResponseEntity.ok(Map.of(
+                "status", "DEGRADED",
+                "service", "external-dependency",
+                "message", "Servicio externo no disponible, pero Auth Service sigue funcionando"
+        ));
+    }
+
+    // Solo ADMIN puede eliminar usuarios
+    @DeleteMapping("/users/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Eliminar usuario (solo ADMIN)", description = "Endpoint protegido por rol")
+    public ResponseEntity<Void> deleteUser(@PathVariable String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        userRepository.delete(user);
+        return ResponseEntity.noContent().build();
     }
 }
