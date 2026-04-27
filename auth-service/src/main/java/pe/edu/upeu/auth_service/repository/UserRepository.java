@@ -16,12 +16,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Email
     boolean existsByEmail(String email);
 
-    // DNI 👈 NUEVO
+    // DNI
     boolean existsByDni(String dni);
 
     // University code
     boolean existsByUniversityCode(String universityCode);
 
-    // Phone 👈 NUEVO
+    // Phone
     boolean existsByPhone(String phone);
 }

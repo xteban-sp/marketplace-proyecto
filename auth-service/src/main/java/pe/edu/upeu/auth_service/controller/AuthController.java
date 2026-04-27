@@ -42,7 +42,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
 
-        // === Validaciones de unicidad ===
         if (userRepository.existsByDni(request.getDni())) {
             return ResponseEntity.badRequest()
                     .body(new AuthResponse(null, null, null, "El DNI ya está registrado"));
@@ -64,13 +63,11 @@ public class AuthController {
                     .body(new AuthResponse(null, null, null, "El username ya está registrado"));
         }
 
-        // === Asignar los roles ===
         Set<String> validRoles = Set.of("USER", "SELLER", "ADMIN");
         Set<String> assignedRoles = (request.getRoles() != null && !request.getRoles().isEmpty() && validRoles.containsAll(request.getRoles()))
                 ? request.getRoles()
                 : Set.of("USER");
 
-        // === Crear un usuario ===
         User user = User.builder()
                 .fullName(request.getFullName())
                 .dni(request.getDni())
@@ -108,26 +105,20 @@ public class AuthController {
     @Operation(summary = "Validar token JWT", description = "Verifica si un token es válido y devuelve la información del usuario")
     public ResponseEntity<Map<String, Object>> validateToken(@RequestHeader("Authorization") String authHeader) {
         try {
-            // 1. Extraer el token del header
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(400).body(Map.of("valid", false, "error", "Token no proporcionado"));
             }
 
             String token = authHeader.replace("Bearer ", "");
-
-            // 2. Extraer username del token usando tu JwtUtil
             String username = jwtUtil.extractUsername(token);
 
-            // 3. Cargar usuario desde BD para validar que existe y está activo
             pe.edu.upeu.auth_service.entity.User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // 4. Validar que el token no haya expirado y sea válido
             if (!jwtUtil.validateToken(token, user)) {
                 return ResponseEntity.status(401).body(Map.of("valid", false, "error", "Token inválido o expirado"));
             }
 
-            // 5. Todo bien: devolver información real del usuario
             return ResponseEntity.ok(Map.of(
                     "valid", true,
                     "username", user.getUsername(),
@@ -179,7 +170,6 @@ public class AuthController {
         ));
     }
 
-    // Método de demo para Circuit Breaker:
     @GetMapping("/health/external")
     @CircuitBreaker(name = "auth-service", fallbackMethod = "healthFallback")
     @Operation(summary = "Health check con Circuit Breaker", description = "Demo de resiliencia para Unidad 2")

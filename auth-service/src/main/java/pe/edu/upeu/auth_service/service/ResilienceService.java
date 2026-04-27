@@ -14,7 +14,7 @@ public class ResilienceService {
     public String sendWelcomeNotification(String email) {
         log.info("Intentando enviar notificación a: {}", email);
 
-        // SIMULACIÓN DE FALLO (en producción sería Feign/RestTemplate)
+        // SIMULACIÓN DE FALLO
         throw new RuntimeException("Timeout: Notification Service no responde");
     }
 

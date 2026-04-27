@@ -23,19 +23,19 @@ public class User implements UserDetails {
     private UUID id;
 
     @Column(nullable = false, length = 100)
-    private String fullName;  // 👈 NUEVO: Nombre completo
+    private String fullName;
 
     @Column(unique = true, nullable = false, length = 8)
-    private String dni;  // 👈 NUEVO: DNI (8 dígitos, único)
+    private String dni;
 
     @Column(unique = true, nullable = false)
     private String email;
 
     @Column(unique = true, nullable = false, length = 9)
-    private String universityCode;  // 9 dígitos, único
+    private String universityCode;
 
     @Column(unique = true, nullable = false, length = 9)
-    private String phone;  // 👈 NUEVO: Celular (9 dígitos, único)
+    private String phone;
 
     @Column(unique = true, nullable = false, length = 50)
     private String username;
