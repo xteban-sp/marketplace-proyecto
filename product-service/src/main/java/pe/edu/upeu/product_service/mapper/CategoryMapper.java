@@ -1,17 +1,30 @@
 package pe.edu.upeu.product_service.mapper;
 
+import org.springframework.stereotype.Component;
+import pe.edu.upeu.product_service.dto.request.CategoryRequestDTO;
 import pe.edu.upeu.product_service.dto.response.CategoryResponseDTO;
 import pe.edu.upeu.product_service.entity.Category;
 
-public final class CategoryMapper {
+@Component
+public class CategoryMapper {
 
-    private CategoryMapper() {
+    public Category toEntity(CategoryRequestDTO dto) {
+        return Category.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .build();
     }
 
-    public static CategoryResponseDTO toResponse(Category entity) {
-        CategoryResponseDTO dto = new CategoryResponseDTO();
-        dto.setId(entity.getId());
-        dto.setName(entity.getNombre());
-        return dto;
+    public CategoryResponseDTO toDTO(Category category) {
+        return CategoryResponseDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .build();
+    }
+
+    public void updateEntity(Category category, CategoryRequestDTO dto) {
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
     }
 }
