@@ -1,6 +1,8 @@
 package pe.edu.upeu.order_service.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import pe.edu.upeu.order_service.client.ProductClient;
@@ -34,6 +36,8 @@ public class OrderService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    @CircuitBreaker(name = "productoService", fallbackMethod = "fallbackCrearPedidoPorProductoService")
+    @Retry(name = "productoService", fallbackMethod = "fallbackCrearPedidoPorProductoService")
     public OrderResponse create(CreateOrderRequest request) {
         if (request.getCompradorId().equals(request.getVendedorId())) {
             throw new IllegalArgumentException("Un usuario no puede comprarse a si mismo");
@@ -80,6 +84,10 @@ public class OrderService {
         kafkaTemplate.send("pedido-creado", guardada.getId().toString(), evento);
 
         return toResponse(guardada);
+    }
+
+    private OrderResponse fallbackCrearPedidoPorProductoService(CreateOrderRequest request, Throwable ex) {
+        throw new IllegalStateException("No se pudo validar productos. Intenta nuevamente en unos segundos.", ex);
     }
 
     public OrderResponse findById(UUID id) {
