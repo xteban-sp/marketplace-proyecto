@@ -2,6 +2,7 @@ package pe.edu.upeu.payment_service.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,8 +17,12 @@ import pe.edu.upeu.payment_service.dto.CreatePaymentRequest;
 import pe.edu.upeu.payment_service.dto.PaymentResponse;
 import pe.edu.upeu.payment_service.entity.PaymentStatus;
 import pe.edu.upeu.payment_service.service.PaymentService;
+import org.springframework.web.bind.annotation.GetMapping;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -56,5 +61,23 @@ public class PaymentController {
                                               @RequestParam String status,
                                               @RequestHeader(value = "x-signature", required = false) String signature) {
         return paymentService.procesarWebhookMercadoPago(externalReference, status);
+    }
+
+    // Método de prueba para la actividad:
+    @GetMapping("/test-resilience")
+    @CircuitBreaker(name = "pedidoService", fallbackMethod = "testFallback")
+    @Retry(name = "pedidoService")
+    public ResponseEntity<Map<String, String>> testResilience() {
+        //SIMULACIÓN DE FALLO (en producción sería orderClient.getOrder(...))
+        throw new RuntimeException("Order Service no responde temporalmente");
+    }
+
+    // 🟢 Fallback method
+    public ResponseEntity<Map<String, String>> testFallback(Throwable t) {
+        return ResponseEntity.ok(Map.of(
+                "status", "DEGRADED",
+                "message", "Pago procesado en modo degradado. Order Service no disponible.",
+                "fallback", "true"
+        ));
     }
 }

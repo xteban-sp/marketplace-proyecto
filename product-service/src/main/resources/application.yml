@@ -47,3 +47,29 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+    resilience4j:
+      circuitbreaker:
+        instances:
+          auth-service:
+            registerHealthIndicator: true
+            slidingWindowSize: 10
+            failureRateThreshold: 50
+            waitDurationInOpenState: 10s
+            permittedNumberOfCallsInHalfOpenState: 3
+            automaticTransitionFromOpenToHalfOpenEnabled: true
+      retry:
+        instances:
+          auth-service:
+            maxAttempts: 3
+            waitDuration: 1s
+            enableExponentialBackoff: true
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,circuitbreakers,circuitbreakerevents
+      health:
+        circuitbreakers:
+          enabled: true
