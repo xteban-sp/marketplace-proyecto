@@ -113,6 +113,26 @@ public class PaymentService {
     }
 
     private Map<String, Object> construirEvento(Payment payment) {
+        String vendedorId = null;
+        try {
+            Map<String, Object> pedido = orderClient.getOrder(payment.getPedidoId());
+            if (pedido != null && pedido.get("vendedorId") != null) {
+                vendedorId = String.valueOf(pedido.get("vendedorId"));
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (vendedorId != null && !vendedorId.isBlank()) {
+            return Map.of(
+                    "pagoId", payment.getId().toString(),
+                    "pedidoId", payment.getPedidoId().toString(),
+                    "compradorId", payment.getCompradorId().toString(),
+                    "vendedorId", vendedorId,
+                    "estado", payment.getEstado().name(),
+                    "monto", payment.getMonto()
+            );
+        }
+
         return Map.of(
                 "pagoId", payment.getId().toString(),
                 "pedidoId", payment.getPedidoId().toString(),
