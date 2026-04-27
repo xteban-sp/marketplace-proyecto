@@ -6,10 +6,9 @@ import pe.edu.upeu.product_service.dto.response.CategoryResponseDTO;
 import java.util.List;
 
 public interface CategoryService {
-
     CategoryResponseDTO create(CategoryRequestDTO dto);
-    CategoryResponseDTO getById(Long id);
+    CategoryResponseDTO getById(Long id);                          // ← Long
     List<CategoryResponseDTO> getAll();
-    CategoryResponseDTO update(Long id, CategoryRequestDTO dto);
-    void delete(Long id);
+    CategoryResponseDTO update(Long id, CategoryRequestDTO dto);   // ← Long
+    void delete(Long id);                                          // ← Long
 }

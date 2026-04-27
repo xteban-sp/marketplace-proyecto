@@ -36,6 +36,7 @@ public class Product {
     @Column(length = 300)
     private String imageUrl;
 
+    @Builder.Default                   // ← agrega esta línea
     @Column(nullable = false)
     private Boolean active = true;
 

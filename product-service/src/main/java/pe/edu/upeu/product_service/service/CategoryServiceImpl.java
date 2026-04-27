@@ -24,17 +24,17 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponseDTO create(CategoryRequestDTO dto) {
         if (categoryRepository.existsByName(dto.getName())) {
-            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + dto.getName());
+            throw new IllegalArgumentException("Ya existe una categoría con ese nombre: " + dto.getName());
         }
-        Category category = categoryMapper.toEntity(dto);
-        return categoryMapper.toDTO(categoryRepository.save(category));
+        Category saved = categoryRepository.save(categoryMapper.toEntity(dto));
+        return categoryMapper.toDTO(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CategoryResponseDTO getById(Long id) {
+    public CategoryResponseDTO getById(Long id) {                  // ← Long
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new CategoryNotFoundException("Categoría no encontrada: " + id));
         return categoryMapper.toDTO(category);
     }
 
@@ -49,18 +49,18 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponseDTO update(Long id, CategoryRequestDTO dto) {
+    public CategoryResponseDTO update(Long id, CategoryRequestDTO dto) {  // ← Long
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new CategoryNotFoundException("Categoría no encontrada: " + id));
         categoryMapper.updateEntity(category, dto);
         return categoryMapper.toDTO(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id) {                                  // ← Long
         if (!categoryRepository.existsById(id)) {
-            throw new CategoryNotFoundException("Categoría no encontrada con ID: " + id);
+            throw new CategoryNotFoundException("Categoría no encontrada: " + id);
         }
         categoryRepository.deleteById(id);
     }
