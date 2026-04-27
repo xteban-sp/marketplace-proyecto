@@ -45,7 +45,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "products", key = "'all_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+// ← sin @Cacheable, Page<T> no es serializable en Redis
     public Page<ProductResponseDTO> getAll(Pageable pageable) {
         return productRepository.findByActiveTrue(pageable).map(this::toResponse);
     }
