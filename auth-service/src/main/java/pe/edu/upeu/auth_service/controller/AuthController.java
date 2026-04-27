@@ -19,6 +19,8 @@ import pe.edu.upeu.auth_service.dto.AuthResponse;
 import pe.edu.upeu.auth_service.entity.User;
 import pe.edu.upeu.auth_service.repository.UserRepository;
 import pe.edu.upeu.auth_service.security.JwtUtil;
+import pe.edu.upeu.auth_service.service.ResilienceService;
+
 import java.util.*;
 
 @RestController
@@ -206,4 +208,19 @@ public class AuthController {
         userRepository.delete(user);
         return ResponseEntity.noContent().build();
     }
+
+    // 1. Inyecta el service en el constructor (si usas @RequiredArgsConstructor, ya está)
+    private final ResilienceService resilienceService;
+
+    // 2. Agrega este endpoint:
+    @GetMapping("/test-resilience")
+    @Operation(summary = "Actividad Resiliencia", description = "Prueba Circuit Breaker + Retry + Fallback")
+    public ResponseEntity<Map<String, String>> testResilience(
+            @RequestParam(defaultValue = "alumno@upeu.edu.pe") String email) {
+
+        String result = resilienceService.sendWelcomeNotification(email);
+        return ResponseEntity.ok(Map.of("status", "DEGRADED_OK", "message", result));
+    }
+
+
 }
