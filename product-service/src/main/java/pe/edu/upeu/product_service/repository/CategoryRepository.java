@@ -4,14 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import pe.edu.upeu.product_service.entity.Category;
 
-import java.util.Optional;
-
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    // Buscar categoría por nombre exacto
-    Optional<Category> findByName(String name);
+    boolean existsByName(String name);   // ← requerido por CategoryServiceImpl
 
-    // Verificar si ya existe una categoría con ese nombre (para validar duplicados)
-    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name, Long id);  // útil para update sin falso positivo
 }

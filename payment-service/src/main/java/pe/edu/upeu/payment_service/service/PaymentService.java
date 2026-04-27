@@ -1,6 +1,8 @@
 package pe.edu.upeu.payment_service.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import pe.edu.upeu.payment_service.client.OrderClient;
@@ -30,6 +32,8 @@ public class PaymentService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    @CircuitBreaker(name = "pedidoService", fallbackMethod = "fallbackCrearPagoPorPedidoService")
+    @Retry(name = "pedidoService", fallbackMethod = "fallbackCrearPagoPorPedidoService")
     public PaymentResponse create(CreatePaymentRequest request) {
         Map<String, Object> pedido = orderClient.getOrder(request.getPedidoId());
         if (pedido == null || pedido.isEmpty()) {
@@ -59,6 +63,8 @@ public class PaymentService {
         return paymentRepository.findByPedidoId(orderId).stream().map(this::toResponse).toList();
     }
 
+    @CircuitBreaker(name = "pedidoService", fallbackMethod = "fallbackActualizarEstadoPagoPorPedidoService")
+    @Retry(name = "pedidoService", fallbackMethod = "fallbackActualizarEstadoPagoPorPedidoService")
     public PaymentResponse updateStatus(UUID id, PaymentStatus status) {
         Payment payment = getEntity(id);
         payment.setEstado(status);
@@ -74,6 +80,15 @@ public class PaymentService {
         }
 
         return toResponse(guardado);
+    }
+
+    private PaymentResponse fallbackCrearPagoPorPedidoService(CreatePaymentRequest request, Throwable ex) {
+        throw new IllegalStateException("No se pudo validar el pedido para crear el pago. Intenta nuevamente.", ex);
+    }
+
+    private PaymentResponse fallbackActualizarEstadoPagoPorPedidoService(UUID id, PaymentStatus status, Throwable ex) {
+        Payment payment = getEntity(id);
+        return toResponse(payment);
     }
 
     public PaymentResponse procesarWebhookMercadoPago(String externalReference, String status) {

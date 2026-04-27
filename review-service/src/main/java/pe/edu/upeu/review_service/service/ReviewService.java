@@ -1,5 +1,7 @@
 package pe.edu.upeu.review_service.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Service;
 import org.springframework.kafka.core.KafkaTemplate;
 import pe.edu.upeu.review_service.client.OrderClient;
@@ -26,6 +28,8 @@ public class ReviewService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    @CircuitBreaker(name = "pedidoService", fallbackMethod = "fallbackValidarResenaPorPedidoService")
+    @Retry(name = "pedidoService", fallbackMethod = "fallbackValidarResenaPorPedidoService")
     public ReviewResponse create(CreateReviewRequest request) {
         if (reviewRepository.existsByPedidoIdAndUsuarioId(request.getPedidoId(), request.getUsuarioId())) {
             throw new IllegalArgumentException("Ya existe una resena para esta orden y usuario");
@@ -55,6 +59,10 @@ public class ReviewService {
         kafkaTemplate.send("resena-creada", guardada.getId().toString(), evento);
 
         return toResponse(guardada);
+    }
+
+    private ReviewResponse fallbackValidarResenaPorPedidoService(CreateReviewRequest request, Throwable ex) {
+        throw new IllegalStateException("No se pudo validar la elegibilidad de resena en este momento. Intenta nuevamente.", ex);
     }
 
     public List<ReviewResponse> byProduct(Long productId) {
