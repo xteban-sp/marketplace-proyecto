@@ -1,7 +1,5 @@
 package pe.edu.upeu.recommendation_service.service;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import pe.edu.upeu.recommendation_service.dto.CreateRecommendationRequest;
 import pe.edu.upeu.recommendation_service.dto.RecommendationResponse;
@@ -20,7 +18,6 @@ public class RecommendationService {
         this.recommendationRepository = recommendationRepository;
     }
 
-    @CacheEvict(value = "recommendations", key = "#request.usuarioId")
     public RecommendationResponse upsert(CreateRecommendationRequest request) {
         Recommendation recommendation = recommendationRepository
                 .findByUsuarioIdAndProductoId(request.getUsuarioId(), request.getProductoId())
@@ -33,7 +30,6 @@ public class RecommendationService {
         return toResponse(recommendationRepository.save(recommendation));
     }
 
-    @Cacheable(value = "recommendations", key = "#usuarioId")
     public List<RecommendationResponse> listByUser(UUID usuarioId) {
         return recommendationRepository.findTop20ByUsuarioIdOrderByPuntajeDesc(usuarioId)
                 .stream()

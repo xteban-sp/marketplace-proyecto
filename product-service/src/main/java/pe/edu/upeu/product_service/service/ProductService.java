@@ -2,9 +2,6 @@ package pe.edu.upeu.product_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,7 +26,6 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDTO create(ProductRequestDTO dto) {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException("Categoría no encontrada: " + dto.getCategoryId()));
@@ -39,7 +35,6 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "products", key = "#id")
     public ProductResponseDTO getById(Long id) {
         return toResponse(getEntity(id));
     }
@@ -68,8 +63,6 @@ public class ProductService {
     }
 
     @Transactional
-    @CachePut(value = "products", key = "#id")
-    @CacheEvict(value = "products", allEntries = true)
     public ProductResponseDTO update(Long id, ProductRequestDTO dto) {
         Product product = getEntity(id);
         Category category = categoryRepository.findById(dto.getCategoryId())
@@ -86,7 +79,6 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(value = "products", allEntries = true)
     public void delete(Long id) {
         Product product = getEntity(id);
         product.setActive(false);

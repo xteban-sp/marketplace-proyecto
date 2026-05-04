@@ -14,7 +14,7 @@ import pe.edu.upeu.product_service.service.CategoryService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/categories")   // ← coincide con el API Gateway
+@RequestMapping({"/api/categorias", "/api/categories"})
 @RequiredArgsConstructor
 @Tag(name = "Categories", description = "Gestión de categorías de productos")
 public class CategoryController {
