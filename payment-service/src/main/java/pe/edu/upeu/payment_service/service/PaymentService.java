@@ -1,8 +1,8 @@
 package pe.edu.upeu.payment_service.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import pe.edu.upeu.payment_service.client.OrderClient;

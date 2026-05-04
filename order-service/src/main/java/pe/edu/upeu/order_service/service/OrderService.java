@@ -1,8 +1,9 @@
 package pe.edu.upeu.order_service.service;
 
-import jakarta.persistence.EntityNotFoundException;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import pe.edu.upeu.order_service.client.ProductClient;
@@ -51,7 +52,12 @@ public class OrderService {
 
         BigDecimal total = BigDecimal.ZERO;
         for (OrderItemRequest itemRequest : request.getItems()) {
-            Map<String, Object> producto = productClient.getProduct(itemRequest.getProductoId());
+            Map<String, Object> producto;
+            try {
+                producto = productClient.getProduct(itemRequest.getProductoId());
+            } catch (FeignException.NotFound ex) {
+                throw new EntityNotFoundException("No se encontro el producto con id: " + itemRequest.getProductoId());
+            }
             if (producto == null || producto.isEmpty()) {
                 throw new EntityNotFoundException("No se encontro el producto con id: " + itemRequest.getProductoId());
             }
@@ -87,6 +93,16 @@ public class OrderService {
     }
 
     private OrderResponse fallbackCrearPedidoPorProductoService(CreateOrderRequest request, Throwable ex) {
+        Throwable causa = ex;
+        while (causa.getCause() != null) {
+            causa = causa.getCause();
+        }
+        if (causa instanceof IllegalArgumentException iae) {
+            throw iae;
+        }
+        if (causa instanceof EntityNotFoundException enfe) {
+            throw enfe;
+        }
         throw new IllegalStateException("No se pudo validar productos. Intenta nuevamente en unos segundos.", ex);
     }
 

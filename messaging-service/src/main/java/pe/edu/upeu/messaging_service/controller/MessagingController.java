@@ -62,8 +62,6 @@ public class MessagingController {
     @Operation(summary = "Demo Resiliencia (Actividad)", description = "Prueba Circuit Breaker + Retry + Fallback")
     public ResponseEntity<Map<String, String>> testResilience(
             @RequestParam(defaultValue = "conv-123") UUID conversationId) {
-
-        // SIMULACIÓN DE FALLO (en producción sería messageRepository.save())
         log.info("📡 Simulando fallo para prueba de resiliencia");
         throw new RuntimeException("Database connection timeout - simulación para actividad");
     }

@@ -74,7 +74,6 @@ public class MessagingService {
         log.warn("FALLBACK ACTIVADO para conversación {}: {}",
                 request.getConversationId(), t.getMessage());
 
-        // Respuesta degradada pero funcional
         MessageResponse degraded = new MessageResponse();
         degraded.setId(UUID.randomUUID());
         degraded.setConversationId(request.getConversationId());
@@ -83,8 +82,6 @@ public class MessagingService {
         degraded.setContent(request.getContent());
         degraded.setReadFlag(false);
         degraded.setSentAt(LocalDateTime.now());
-        // Nota: Si MessageResponse no tiene este campo, quita la siguiente línea
-        // degraded.setMensajeAdicional("Mensaje en cola pendiente. Se procesará cuando el sistema esté estable.");
 
         return degraded;
     }

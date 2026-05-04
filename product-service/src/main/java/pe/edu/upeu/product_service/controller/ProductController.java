@@ -20,7 +20,7 @@ import pe.edu.upeu.product_service.service.ProductService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping({"/api/productos", "/api/products"})
 @RequiredArgsConstructor
 @Tag(name = "Products", description = "Gestión de productos del Marketplace Universitario")
 public class ProductController {

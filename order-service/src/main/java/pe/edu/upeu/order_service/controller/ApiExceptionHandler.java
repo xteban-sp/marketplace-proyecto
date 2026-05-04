@@ -42,4 +42,13 @@ public class ApiExceptionHandler {
                 "message", ex.getMessage()
         ));
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleServiceUnavailable(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", 503,
+                "message", ex.getMessage()
+        ));
+    }
 }
