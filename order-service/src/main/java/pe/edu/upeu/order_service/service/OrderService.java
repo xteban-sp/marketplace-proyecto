@@ -20,6 +20,7 @@ import pe.edu.upeu.order_service.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -67,13 +68,24 @@ public class OrderService {
                 throw new IllegalArgumentException("No hay stock suficiente para el producto " + itemRequest.getProductoId());
             }
 
+            Boolean activo = toBoolean(producto.get("active"));
+            if (Boolean.FALSE.equals(activo)) {
+                throw new IllegalArgumentException("El producto " + itemRequest.getProductoId() + " no esta disponible");
+            }
+
+            String tituloProducto = toStringValue(producto.get("name"));
+            BigDecimal precioUnitario = toBigDecimal(producto.get("price"));
+            if (tituloProducto == null || tituloProducto.isBlank() || precioUnitario == null) {
+                throw new IllegalStateException("El producto " + itemRequest.getProductoId() + " no tiene datos validos para el pedido");
+            }
+
             OrderItem item = new OrderItem();
             item.setPedido(order);
             item.setProductoId(itemRequest.getProductoId());
-            item.setTituloProducto(itemRequest.getTituloProducto().trim());
+            item.setTituloProducto(tituloProducto.trim());
             item.setQuantity(itemRequest.getQuantity());
-            item.setPrecioUnitario(itemRequest.getPrecioUnitario());
-            item.setSubtotal(itemRequest.getPrecioUnitario().multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
+            item.setPrecioUnitario(precioUnitario);
+            item.setSubtotal(precioUnitario.multiply(BigDecimal.valueOf(itemRequest.getQuantity())));
             total = total.add(item.getSubtotal());
             order.getItems().add(item);
         }
@@ -166,5 +178,36 @@ public class OrderService {
         response.setPrecioUnitario(item.getPrecioUnitario());
         response.setSubtotal(item.getSubtotal());
         return response;
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof BigDecimal decimal) {
+            return decimal;
+        }
+        if (value instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+        try {
+            return new BigDecimal(Objects.toString(value));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Boolean toBoolean(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Boolean booleanValue) {
+            return booleanValue;
+        }
+        return Boolean.parseBoolean(Objects.toString(value));
+    }
+
+    private String toStringValue(Object value) {
+        return value == null ? null : Objects.toString(value);
     }
 }

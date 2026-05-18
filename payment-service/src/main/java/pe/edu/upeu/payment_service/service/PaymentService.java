@@ -13,8 +13,10 @@ import pe.edu.upeu.payment_service.entity.PaymentProvider;
 import pe.edu.upeu.payment_service.entity.PaymentStatus;
 import pe.edu.upeu.payment_service.repository.PaymentRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -40,10 +42,31 @@ public class PaymentService {
             throw new EntityNotFoundException("No se encontro el pedido asociado al pago");
         }
 
+        UUID compradorPedido = toUuid(pedido.get("compradorId"));
+        BigDecimal totalPedido = toBigDecimal(pedido.get("montoTotal"));
+        if (compradorPedido == null || totalPedido == null) {
+            throw new IllegalStateException("El pedido no tiene datos consistentes para procesar pago");
+        }
+
+        if (request.getCompradorId() != null && !request.getCompradorId().equals(compradorPedido)) {
+            throw new IllegalArgumentException("El comprador del pago no coincide con el comprador del pedido");
+        }
+        if (request.getMonto() != null && request.getMonto().compareTo(totalPedido) != 0) {
+            throw new IllegalArgumentException("El monto del pago no coincide con el total del pedido");
+        }
+
+        boolean tienePagoActivo = paymentRepository.existsByPedidoIdAndEstadoIn(
+                request.getPedidoId(),
+                List.of(PaymentStatus.PENDING, PaymentStatus.APPROVED)
+        );
+        if (tienePagoActivo) {
+            throw new IllegalStateException("El pedido ya tiene un pago activo");
+        }
+
         Payment payment = new Payment();
         payment.setPedidoId(request.getPedidoId());
-        payment.setCompradorId(request.getCompradorId());
-        payment.setMonto(request.getMonto());
+        payment.setCompradorId(compradorPedido);
+        payment.setMonto(totalPedido);
         payment.setProveedor(PaymentProvider.MERCADO_PAGO);
         payment.setEstado(PaymentStatus.PENDING);
 
@@ -67,6 +90,10 @@ public class PaymentService {
     @Retry(name = "pedidoService", fallbackMethod = "fallbackActualizarEstadoPagoPorPedidoService")
     public PaymentResponse updateStatus(UUID id, PaymentStatus status) {
         Payment payment = getEntity(id);
+        validarTransicion(payment.getEstado(), status);
+        if (payment.getEstado() == status) {
+            return toResponse(payment);
+        }
         payment.setEstado(status);
         Payment guardado = paymentRepository.save(payment);
 
@@ -155,5 +182,51 @@ public class PaymentService {
                 "estado", payment.getEstado().name(),
                 "monto", payment.getMonto()
         );
+    }
+
+    private void validarTransicion(PaymentStatus actual, PaymentStatus nuevo) {
+        if (actual == PaymentStatus.PENDING) {
+            if (nuevo == PaymentStatus.APPROVED || nuevo == PaymentStatus.FAILED || nuevo == PaymentStatus.CANCELLED) {
+                return;
+            }
+        }
+        if (actual == PaymentStatus.APPROVED && nuevo == PaymentStatus.REFUNDED) {
+            return;
+        }
+        if (actual == nuevo) {
+            return;
+        }
+        throw new IllegalStateException("Transicion de estado de pago invalida: " + actual + " -> " + nuevo);
+    }
+
+    private UUID toUuid(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof UUID uuid) {
+            return uuid;
+        }
+        try {
+            return UUID.fromString(Objects.toString(value));
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof BigDecimal decimal) {
+            return decimal;
+        }
+        if (value instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+        try {
+            return new BigDecimal(Objects.toString(value));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }
