@@ -32,7 +32,12 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId().toString());
         claims.put("universityCode", user.getUniversityCode());
-        claims.put("roles", new ArrayList<>(user.getRoles()));
+        claims.put("roles", user.getRoles().stream().map(role -> role.getNombreRol()).toList());
+        claims.put("privilegios", user.getRoles().stream()
+                .flatMap(role -> role.getPrivilegios().stream())
+                .map(privilegio -> privilegio.getCodigoPrivilegio())
+                .distinct()
+                .toList());
 
         return Jwts.builder()
                 .setClaims(claims)

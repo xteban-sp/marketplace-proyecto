@@ -2,6 +2,7 @@ package pe.edu.upeu.order_service.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,27 +34,32 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyAuthority('PEDIDO_CREAR','ROLE_ADMIN')")
     public OrderResponse create(@Valid @RequestBody CreateOrderRequest request) {
         return orderService.create(request);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('PEDIDO_VER','ROLE_ADMIN')")
     public OrderResponse findById(@PathVariable UUID id) {
         return orderService.findById(id);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('PEDIDO_VER','ROLE_ADMIN')")
     public List<OrderResponse> findAll(@RequestParam(required = false) UUID compradorId,
                                        @RequestParam(required = false) UUID vendedorId) {
         return orderService.findAll(compradorId, vendedorId);
     }
 
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyAuthority('PEDIDO_ACTUALIZAR_ESTADO','ROLE_ADMIN')")
     public OrderResponse updateStatus(@PathVariable UUID id, @RequestParam OrderStatus estado) {
         return orderService.updateStatus(id, estado);
     }
 
     @PatchMapping("/{id}/estado-pago")
+    @PreAuthorize("hasAnyAuthority('PAGO_ACTUALIZAR_ESTADO','ROLE_ADMIN')")
     public OrderResponse updatePaymentStatus(@PathVariable UUID id, @RequestParam PaymentStatus estadoPago) {
         return orderService.updatePaymentStatus(id, estadoPago);
     }

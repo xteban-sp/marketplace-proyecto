@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -43,10 +44,13 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private Set<String> roles = Set.of("USER");
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "rol_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
     @Column(nullable = false)
     private boolean enabled = true;
@@ -68,9 +72,14 @@ public class User implements UserDetails {
     // === UserDetails para Spring Security ===
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .toList();
+        Set<SimpleGrantedAuthority> autoridades = new HashSet<>();
+        for (Role rol : roles) {
+            autoridades.add(new SimpleGrantedAuthority(rol.getNombreRol()));
+            for (Privilegio privilegio : rol.getPrivilegios()) {
+                autoridades.add(new SimpleGrantedAuthority(privilegio.getCodigoPrivilegio()));
+            }
+        }
+        return autoridades;
     }
 
     @Override public String getUsername() { return username; }

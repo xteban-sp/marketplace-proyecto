@@ -33,10 +33,18 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/productos/**", "/api/categorias/**").hasAnyRole("SELLER", "ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/productos/**", "/api/categorias/**").hasAnyRole("SELLER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**", "/api/categorias/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/productos/**").hasAnyAuthority("PRODUCTO_CREAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAnyAuthority("PRODUCTO_EDITAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasAnyAuthority("PRODUCTO_ELIMINAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasAnyAuthority("CATEGORIA_GESTIONAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/categorias/**").hasAnyAuthority("CATEGORIA_GESTIONAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasAnyAuthority("CATEGORIA_GESTIONAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/users/**").hasAnyAuthority("USUARIO_ELIMINAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/auth/users/*/seller").hasAnyAuthority("USUARIO_HABILITAR_VENDEDOR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAnyAuthority("PEDIDO_CREAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/**").hasAnyAuthority("PEDIDO_ACTUALIZAR_ESTADO", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/pagos/**").hasAnyAuthority("PAGO_CREAR", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/pagos/**").hasAnyAuthority("PAGO_ACTUALIZAR_ESTADO", "ROLE_ADMIN")
                         .requestMatchers(
                                 "/api/pedidos/**",
                                 "/api/pagos/**",

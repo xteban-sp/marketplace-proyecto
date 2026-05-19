@@ -26,11 +26,12 @@ public class JwtService {
 
     public List<String> extractRoles(String token) {
         Claims claims = parseClaims(token);
-        Object roles = claims.get("roles");
-        if (roles instanceof List<?> list) {
-            return list.stream().map(String::valueOf).toList();
-        }
-        return List.of();
+        return extractListClaim(claims, "roles");
+    }
+
+    public List<String> extractPrivilegios(String token) {
+        Claims claims = parseClaims(token);
+        return extractListClaim(claims, "privilegios");
     }
 
     private SecretKey getSigningKey() {
@@ -39,5 +40,13 @@ public class JwtService {
             throw new IllegalStateException("JWT secret debe tener al menos 32 caracteres");
         }
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private List<String> extractListClaim(Claims claims, String claimName) {
+        Object values = claims.get(claimName);
+        if (values instanceof List<?> list) {
+            return list.stream().map(String::valueOf).toList();
+        }
+        return List.of();
     }
 }

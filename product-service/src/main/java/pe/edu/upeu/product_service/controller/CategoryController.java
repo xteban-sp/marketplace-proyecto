@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upeu.product_service.dto.request.CategoryRequestDTO;
 import pe.edu.upeu.product_service.dto.response.CategoryResponseDTO;
@@ -23,6 +24,7 @@ public class CategoryController {
 
     @Operation(summary = "Crear categoría")
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('CATEGORIA_GESTIONAR','ROLE_ADMIN')")
     public ResponseEntity<CategoryResponseDTO> create(@Valid @RequestBody CategoryRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(dto));
     }
@@ -41,6 +43,7 @@ public class CategoryController {
 
     @Operation(summary = "Actualizar categoría")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('CATEGORIA_GESTIONAR','ROLE_ADMIN')")
     public ResponseEntity<CategoryResponseDTO> update(
             @PathVariable Long id,
             @Valid @RequestBody CategoryRequestDTO dto) {
@@ -49,6 +52,7 @@ public class CategoryController {
 
     @Operation(summary = "Eliminar categoría")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('CATEGORIA_GESTIONAR','ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();

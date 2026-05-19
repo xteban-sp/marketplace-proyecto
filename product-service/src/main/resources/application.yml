@@ -27,6 +27,9 @@ spring:
   cache:
     type: simple
 
+jwt:
+  secret: clave_secreta_dev_marketplace_2026_minimo_32_chars
+
 server:
   port: 8082
 

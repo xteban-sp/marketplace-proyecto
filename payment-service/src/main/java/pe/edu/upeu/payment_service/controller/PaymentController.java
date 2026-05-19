@@ -3,6 +3,7 @@ package pe.edu.upeu.payment_service.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,6 @@ import pe.edu.upeu.payment_service.dto.CreatePaymentRequest;
 import pe.edu.upeu.payment_service.dto.PaymentResponse;
 import pe.edu.upeu.payment_service.entity.PaymentStatus;
 import pe.edu.upeu.payment_service.service.PaymentService;
-import org.springframework.web.bind.annotation.GetMapping;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 
@@ -37,21 +37,25 @@ public class PaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyAuthority('PAGO_CREAR','ROLE_ADMIN')")
     public PaymentResponse create(@Valid @RequestBody CreatePaymentRequest request) {
         return paymentService.create(request);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('PAGO_VER','ROLE_ADMIN')")
     public PaymentResponse findById(@PathVariable UUID id) {
         return paymentService.findById(id);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('PAGO_VER','ROLE_ADMIN')")
     public List<PaymentResponse> findByOrder(@RequestParam UUID pedidoId) {
         return paymentService.findByOrder(pedidoId);
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyAuthority('PAGO_ACTUALIZAR_ESTADO','ROLE_ADMIN')")
     public PaymentResponse updateStatus(@PathVariable UUID id, @RequestParam PaymentStatus status) {
         return paymentService.updateStatus(id, status);
     }

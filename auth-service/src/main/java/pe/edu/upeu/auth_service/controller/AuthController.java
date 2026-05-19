@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upeu.auth_service.dto.LoginRequest;
 import pe.edu.upeu.auth_service.dto.RegisterRequest;
 import pe.edu.upeu.auth_service.dto.AuthResponse;
+import pe.edu.upeu.auth_service.entity.Role;
 import pe.edu.upeu.auth_service.entity.User;
+import pe.edu.upeu.auth_service.repository.RoleRepository;
 import pe.edu.upeu.auth_service.repository.UserRepository;
 import pe.edu.upeu.auth_service.security.JwtUtil;
 import pe.edu.upeu.auth_service.service.ResilienceService;
@@ -31,6 +33,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -65,10 +68,17 @@ public class AuthController {
         }
 
         // === Asignar los roles ===
-        Set<String> validRoles = Set.of("USER", "SELLER", "ADMIN");
-        Set<String> assignedRoles = (request.getRoles() != null && !request.getRoles().isEmpty() && validRoles.containsAll(request.getRoles()))
-                ? request.getRoles()
-                : Set.of("USER");
+        Set<String> requestedRoles = request.getRoles() == null ? Set.of() : request.getRoles();
+        if (requestedRoles.stream().anyMatch(role -> "ADMIN".equalsIgnoreCase(role) || "ROLE_ADMIN".equalsIgnoreCase(role))) {
+            return ResponseEntity.badRequest()
+                    .body(new AuthResponse(null, null, null, "No se permite autoasignar rol ADMIN"));
+        }
+
+        Set<Role> rolesAsignados = new HashSet<>();
+        rolesAsignados.add(buscarRolObligatorio("ROLE_USER"));
+        if (requestedRoles.stream().anyMatch(role -> "SELLER".equalsIgnoreCase(role) || "ROLE_SELLER".equalsIgnoreCase(role))) {
+            rolesAsignados.add(buscarRolObligatorio("ROLE_SELLER"));
+        }
 
         // === Crear un usuario ===
         User user = User.builder()
@@ -79,14 +89,14 @@ public class AuthController {
                 .phone(request.getPhone())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .roles(assignedRoles)
+                .roles(rolesAsignados)
                 .enabled(true)
                 .build();
 
         userRepository.save(user);
         String token = jwtUtil.generateToken(user);
 
-        return ResponseEntity.ok(new AuthResponse(token, new ArrayList<>(assignedRoles), user.getUsername(), null));
+        return ResponseEntity.ok(new AuthResponse(token, extraerNombresRol(user), user.getUsername(), null));
     }
 
     @Operation(summary = "Iniciar sesión", description = "Autentica usuario y retorna JWT con roles")
@@ -100,7 +110,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return ResponseEntity.ok(
-                new AuthResponse(jwtUtil.generateToken(user), new ArrayList<>(user.getRoles()), user.getUsername(), null)
+                new AuthResponse(jwtUtil.generateToken(user), extraerNombresRol(user), user.getUsername(), null)
         );
     }
 
@@ -131,7 +141,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "valid", true,
                     "username", user.getUsername(),
-                    "roles", new ArrayList<>(user.getRoles()),
+                    "roles", extraerNombresRol(user),
                     "universityCode", user.getUniversityCode(),
                     "enabled", user.isEnabled()
             ));
@@ -147,6 +157,7 @@ public class AuthController {
     }
 
     @GetMapping("/users/{username}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Obtener usuario por username", description = "Devuelve datos basicos para integracion entre microservicios")
     public ResponseEntity<Map<String, Object>> getUserByUsername(@PathVariable String username) {
         User user = userRepository.findByUsername(username)
@@ -156,25 +167,26 @@ public class AuthController {
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "email", user.getEmail(),
-                "roles", new ArrayList<>(user.getRoles()),
+                "roles", extraerNombresRol(user),
                 "enabled", user.isEnabled()
         ));
     }
 
     @PatchMapping("/users/{username}/seller")
+    @PreAuthorize("hasAnyAuthority('USUARIO_HABILITAR_VENDEDOR','ROLE_ADMIN')")
     @Operation(summary = "Habilitar rol SELLER", description = "Permite que un usuario registrado pueda vender productos")
     public ResponseEntity<Map<String, Object>> enableSellerRole(@PathVariable String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Set<String> roles = new HashSet<>(user.getRoles());
-        roles.add("SELLER");
+        Set<Role> roles = new HashSet<>(user.getRoles());
+        roles.add(buscarRolObligatorio("ROLE_SELLER"));
         user.setRoles(roles);
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of(
                 "username", user.getUsername(),
-                "roles", new ArrayList<>(user.getRoles()),
+                "roles", extraerNombresRol(user),
                 "message", "Rol SELLER habilitado"
         ));
     }
@@ -200,7 +212,7 @@ public class AuthController {
 
     // Solo ADMIN puede eliminar usuarios
     @DeleteMapping("/users/{username}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USUARIO_ELIMINAR','ROLE_ADMIN')")
     @Operation(summary = "Eliminar usuario (solo ADMIN)", description = "Endpoint protegido por rol")
     public ResponseEntity<Void> deleteUser(@PathVariable String username) {
         User user = userRepository.findByUsername(username)
@@ -223,4 +235,13 @@ public class AuthController {
     }
 
 
+
+    private Role buscarRolObligatorio(String nombreRol) {
+        return roleRepository.findByNombreRol(nombreRol)
+                .orElseThrow(() -> new IllegalStateException("No existe rol configurado: " + nombreRol));
+    }
+
+    private List<String> extraerNombresRol(User user) {
+        return user.getRoles().stream().map(Role::getNombreRol).sorted().toList();
+    }
 }

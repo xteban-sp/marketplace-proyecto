@@ -2,6 +2,7 @@ package pe.edu.upeu.auth_service.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -15,11 +16,14 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 20)
-    private String name;  // "USER", "SELLER", "ADMIN"
+    @Column(name = "nombre_rol", unique = true, nullable = false, length = 30)
+    private String nombreRol;
 
-    @ElementCollection
-    @CollectionTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"))
-    @Column(name = "permission")
-    private Set<String> permissions = Set.of();  // Ej: ["CREATE_PRODUCT", "VIEW_ORDERS"]
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "role_privilegios",
+            joinColumns = @JoinColumn(name = "rol_id"),
+            inverseJoinColumns = @JoinColumn(name = "privilegio_id")
+    )
+    private Set<Privilegio> privilegios = new HashSet<>();
 }
