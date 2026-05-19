@@ -42,7 +42,7 @@ Con esto se cumple el requisito de usar MySQL y PostgreSQL en multiples microser
 - `payment-service`: creacion de pago, preferencia de Mercado Pago (sandbox/fallback), webhook de estado, eventos `payment-approved` y `payment-failed`.
 - `messaging-service`: envio de mensajes y consulta por conversacion.
 - `notification-service`: consulta y marcado de notificaciones, consumo de eventos Kafka.
-- `review-service`: creacion de reseñas validando compra pagada.
+- `review-service`: creacion de resenas validando compra pagada.
 - `recommendation-service`: recomendaciones simples por usuario con cache Redis y consumo de eventos.
 
 ## 4) Puertos de servicios
@@ -109,4 +109,44 @@ docker compose up -d
 - Las credenciales actuales son solo de desarrollo local.
 - Para produccion, mover secretos a variables de entorno seguras y rotar tokens.
 - El acceso token de Mercado Pago debe inyectarse con `MERCADOPAGO_ACCESS_TOKEN`.
-- Falta cerrar seguridad por roles en todos los servicios (hoy se permite para acelerar integracion).
+- La seguridad por roles esta pendiente de completar en todos los microservicios distintos a auth-service.
+
+### Variable de entorno JWT_SECRET (obligatoria en produccion)
+
+El `auth-service` lee el secret JWT desde la variable de entorno `JWT_SECRET`.
+Para desarrollo local, crear un archivo `.env` en la raiz del proyecto (ya ignorado por `.gitignore`):
+
+```env
+JWT_SECRET=mi_clave_secreta_desarrollo_local_minimo_32_caracteres_!!
+```
+
+Para produccion (Docker, Kubernetes, etc.):
+
+```bash
+# Docker run
+docker run -e JWT_SECRET=<clave_produccion_segura> auth-service
+
+# Docker Compose: agregar en auth-service environment:
+environment:
+  JWT_SECRET: ${JWT_SECRET}
+```
+
+**NUNCA** commitear la clave real de produccion en el repositorio.
+
+## 8) Bugs corregidos (auth-service) - Mayo 2026
+
+Se corrigieron los siguientes problemas de seguridad y logica en `auth-service`:
+
+| # | Archivo | Problema | Fix aplicado |
+|---|---|---|---|
+| 1 | `JwtUtil.java` | `getBytes()` sin charset causaba tokens invalidos entre SO | `getBytes(StandardCharsets.UTF_8)` |
+| 2 | `AuthController.java` | El cliente podia enviar `roles: ["ADMIN"]` al registrarse | Roles siempre forzados a `USER` en el servidor |
+| 3 | `AuthController.java` | `/users/{u}/seller` sin autenticacion: cualquiera podia escalar privilegios | `@PreAuthorize("hasRole('ADMIN')")` |
+| 4 | `AuthController.java` | `/users/{username}` exponia datos de cualquier usuario sin autenticacion | `@PreAuthorize("isAuthenticated()")` |
+| 5 | `AuthController.java` | `login()` con credenciales incorrectas retornaba HTTP 500 | Captura `AuthenticationException` -> 401 |
+| 6 | `AuthController.java` | `register()` sin `@Transactional`: race condition posible con registros simultaneos | `@Transactional` + catch `DataIntegrityViolationException` -> 409 |
+| 7 | `RegisterRequest.java` | Campo `roles` en el DTO permitia que el cliente lo enviara | Campo `roles` eliminado del DTO |
+| 8 | `GlobalExceptionHandler.java` | `RuntimeException` no manejada causaba 500 generico sin mensaje util | Handler especifico: "no encontrado" -> 404, resto -> 500 |
+| 9 | `GlobalExceptionHandler.java` | `AuthenticationException` y `AccessDeniedException` no manejadas | Handlers con 401 y 403 respectivamente |
+| 10 | `SecurityConfig.java` | Todo `/api/auth/**` era publico, exponiendo endpoints admin | Rutas granulares: solo `/register`, `/login`, `/validate` son publicos |
+| 11 | `application.properties` | `jwt.secret` hardcodeado en texto plano en el repositorio | Secret leido desde variable de entorno `JWT_SECRET` |
