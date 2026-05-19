@@ -6,6 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -63,6 +65,32 @@ public class GlobalExceptionHandler {
         details.put("hint", "Verifique unicidad o restricciones de la base de datos");
         details.put("cause", cause != null ? cause : "Violación de integridad");
         return error(HttpStatus.CONFLICT, "La operación viola restricciones de la base de datos.", details);
+    }
+
+    // FIX: RuntimeException con mensaje "no encontrado" → 404; resto → 500
+    // Antes toda RuntimeException causaba un HTTP 500 genérico sin mensaje útil
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntime(RuntimeException ex) {
+        String message = ex.getMessage();
+        if (message != null && (message.toLowerCase().contains("no encontrado") ||
+                                message.toLowerCase().contains("not found"))) {
+            return error(HttpStatus.NOT_FOUND, message, null);
+        }
+        Map<String, String> details = new LinkedHashMap<>();
+        details.put("message", message != null ? message : "Error desconocido");
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", details);
+    }
+
+    // FIX: 401 para fallos de autenticación de Spring Security (no 500)
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex) {
+        return error(HttpStatus.UNAUTHORIZED, "No autenticado: " + ex.getMessage(), null);
+    }
+
+    // FIX: 403 para accesos denegados por roles (@PreAuthorize)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        return error(HttpStatus.FORBIDDEN, "Acceso denegado: no tienes permisos para realizar esta acción", null);
     }
 
     @ExceptionHandler(Exception.class)
