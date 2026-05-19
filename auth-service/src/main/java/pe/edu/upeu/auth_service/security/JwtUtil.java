@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import pe.edu.upeu.auth_service.entity.User;
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 
@@ -22,7 +23,8 @@ public class JwtUtil {
     private Long expiration;
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = secret.getBytes();
+        // FIX: especificar UTF_8 explícitamente para evitar diferencias entre SO (Windows/Linux/Docker)
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) throw new IllegalStateException("JWT secret debe tener al menos 32 caracteres");
         return Keys.hmacShaKeyFor(keyBytes);
     }
