@@ -7,11 +7,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upeu.auth_service.dto.LoginRequest;
 import pe.edu.upeu.auth_service.dto.RegisterRequest;
@@ -33,13 +38,17 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final ResilienceService resilienceService;
 
     @Operation(summary = "Registrar nuevo usuario", description = "Crea cuenta con validación de DNI, email, código universitario y celular")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Registro exitoso"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos o usuario ya existe")
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o usuario ya existe"),
+            @ApiResponse(responseCode = "409", description = "Conflicto: usuario duplicado por race condition")
     })
     @PostMapping("/register")
+    @Transactional
+    // FIX: @Transactional para atomicidad + manejo de race condition con DataIntegrityViolationException
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
 
         if (userRepository.existsByDni(request.getDni())) {
@@ -63,10 +72,8 @@ public class AuthController {
                     .body(new AuthResponse(null, null, null, "El username ya está registrado"));
         }
 
-        Set<String> validRoles = Set.of("USER", "SELLER", "ADMIN");
-        Set<String> assignedRoles = (request.getRoles() != null && !request.getRoles().isEmpty() && validRoles.containsAll(request.getRoles()))
-                ? request.getRoles()
-                : Set.of("USER");
+        // FIX: el rol siempre es USER al registrarse — el cliente no puede elegir SELLER/ADMIN
+        Set<String> assignedRoles = Set.of("USER");
 
         User user = User.builder()
                 .fullName(request.getFullName())
@@ -80,18 +87,37 @@ public class AuthController {
                 .enabled(true)
                 .build();
 
-        userRepository.save(user);
-        String token = jwtUtil.generateToken(user);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            // FIX: maneja race condition (dos registros simultáneos con mismo DNI/email/etc.)
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new AuthResponse(null, null, null, "El usuario ya existe (conflicto de datos)"));
+        }
 
+        String token = jwtUtil.generateToken(user);
         return ResponseEntity.ok(new AuthResponse(token, new ArrayList<>(assignedRoles), user.getUsername(), null));
     }
 
     @Operation(summary = "Iniciar sesión", description = "Autentica usuario y retorna JWT con roles")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login exitoso"),
+            @ApiResponse(responseCode = "401", description = "Credenciales incorrectas")
+    })
     @PostMapping("/login")
+    // FIX: captura AuthenticationException y retorna 401 en lugar de propagar un 500
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse(null, null, null, "Credenciales incorrectas"));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse(null, null, null, "Autenticación fallida: " + e.getMessage()));
+        }
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -112,7 +138,7 @@ public class AuthController {
             String token = authHeader.replace("Bearer ", "");
             String username = jwtUtil.extractUsername(token);
 
-            pe.edu.upeu.auth_service.entity.User user = userRepository.findByUsername(username)
+            User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             if (!jwtUtil.validateToken(token, user)) {
@@ -137,8 +163,10 @@ public class AuthController {
         }
     }
 
+    // FIX: requiere autenticación — evita enumeración de usuarios por parte de anónimos
     @GetMapping("/users/{username}")
-    @Operation(summary = "Obtener usuario por username", description = "Devuelve datos basicos para integracion entre microservicios")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Obtener usuario por username", description = "Devuelve datos básicos para integración entre microservicios (requiere token)")
     public ResponseEntity<Map<String, Object>> getUserByUsername(@PathVariable String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -152,8 +180,10 @@ public class AuthController {
         ));
     }
 
+    // FIX: solo ADMIN puede promover a SELLER — antes estaba completamente abierto
     @PatchMapping("/users/{username}/seller")
-    @Operation(summary = "Habilitar rol SELLER", description = "Permite que un usuario registrado pueda vender productos")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Habilitar rol SELLER (solo ADMIN)", description = "Permite que un usuario registrado pueda vender productos")
     public ResponseEntity<Map<String, Object>> enableSellerRole(@PathVariable String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -174,12 +204,9 @@ public class AuthController {
     @CircuitBreaker(name = "auth-service", fallbackMethod = "healthFallback")
     @Operation(summary = "Health check con Circuit Breaker", description = "Demo de resiliencia para Unidad 2")
     public ResponseEntity<Map<String, Object>> checkExternalHealth() {
-        // Simula llamada a otro servicio (ej: Notification Service)
-        // En producción: notificationClient.ping()
         return ResponseEntity.ok(Map.of("status", "UP", "service", "external-dependency"));
     }
 
-    // Fallback method (se ejecuta si el circuito está abierto)
     public ResponseEntity<Map<String, Object>> healthFallback(Throwable t) {
         return ResponseEntity.ok(Map.of(
                 "status", "DEGRADED",
@@ -188,7 +215,6 @@ public class AuthController {
         ));
     }
 
-    // Solo ADMIN puede eliminar usuarios
     @DeleteMapping("/users/{username}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar usuario (solo ADMIN)", description = "Endpoint protegido por rol")
@@ -199,18 +225,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    // 1. Inyecta el service en el constructor (si usas @RequiredArgsConstructor, ya está)
-    private final ResilienceService resilienceService;
-
-    // 2. Agrega este endpoint:
     @GetMapping("/test-resilience")
     @Operation(summary = "Actividad Resiliencia", description = "Prueba Circuit Breaker + Retry + Fallback")
     public ResponseEntity<Map<String, String>> testResilience(
             @RequestParam(defaultValue = "alumno@upeu.edu.pe") String email) {
-
         String result = resilienceService.sendWelcomeNotification(email);
         return ResponseEntity.ok(Map.of("status", "DEGRADED_OK", "message", result));
     }
-
-
 }

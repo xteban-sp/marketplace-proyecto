@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -42,5 +41,6 @@ public class RegisterRequest {
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
 
-    private Set<String> roles;
+    // FIX: campo 'roles' eliminado del DTO — el cliente nunca debe poder elegir su propio rol.
+    // El rol se asigna siempre como USER en el servidor (AuthController).
 }
