@@ -96,7 +96,7 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(user);
-        return ResponseEntity.ok(new AuthResponse(token, new ArrayList<>(assignedRoles), user.getUsername(), null));
+        return ResponseEntity.ok(new AuthResponse(token, toRoleAuthorities(assignedRoles), user.getUsername(), null));
     }
 
     @Operation(summary = "Iniciar sesión", description = "Autentica usuario y retorna JWT con roles")
@@ -122,8 +122,9 @@ public class AuthController {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        Set<String> safeRoles = ensureUserHasAtLeastOneRole(user);
         return ResponseEntity.ok(
-                new AuthResponse(jwtUtil.generateToken(user), new ArrayList<>(user.getRoles()), user.getUsername(), null)
+                new AuthResponse(jwtUtil.generateToken(user), toRoleAuthorities(safeRoles), user.getUsername(), null)
         );
     }
 
@@ -148,7 +149,7 @@ public class AuthController {
             return ResponseEntity.ok(Map.of(
                     "valid", true,
                     "username", user.getUsername(),
-                    "roles", new ArrayList<>(user.getRoles()),
+                    "roles", toRoleAuthorities(ensureUserHasAtLeastOneRole(user)),
                     "universityCode", user.getUniversityCode(),
                     "enabled", user.isEnabled()
             ));
@@ -175,7 +176,7 @@ public class AuthController {
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "email", user.getEmail(),
-                "roles", new ArrayList<>(user.getRoles()),
+                "roles", toRoleAuthorities(ensureUserHasAtLeastOneRole(user)),
                 "enabled", user.isEnabled()
         ));
     }
@@ -188,16 +189,16 @@ public class AuthController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Set<String> roles = new HashSet<>(user.getRoles());
-        roles.add("SELLER");
-        user.setRoles(roles);
-        userRepository.save(user);
+            Set<String> roles = new HashSet<>(ensureUserHasAtLeastOneRole(user));
+            roles.add("SELLER");
+            user.setRoles(roles);
+            userRepository.save(user);
 
         return ResponseEntity.ok(Map.of(
                 "username", user.getUsername(),
-                "roles", new ArrayList<>(user.getRoles()),
-                "message", "Rol SELLER habilitado"
-        ));
+                    "roles", toRoleAuthorities(roles),
+                    "message", "Rol SELLER habilitado"
+            ));
     }
 
     @GetMapping("/health/external")
@@ -231,5 +232,22 @@ public class AuthController {
             @RequestParam(defaultValue = "alumno@upeu.edu.pe") String email) {
         String result = resilienceService.sendWelcomeNotification(email);
         return ResponseEntity.ok(Map.of("status", "DEGRADED_OK", "message", result));
+    }
+
+    private Set<String> ensureUserHasAtLeastOneRole(User user) {
+        Set<String> roles = user.getRoles() == null ? new HashSet<>() : new HashSet<>(user.getRoles());
+        if (roles.isEmpty()) {
+            roles.add("USER");
+            user.setRoles(roles);
+            userRepository.save(user);
+        }
+        return roles;
+    }
+
+    private List<String> toRoleAuthorities(Set<String> roles) {
+        return roles.stream()
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                .sorted()
+                .toList();
     }
 }

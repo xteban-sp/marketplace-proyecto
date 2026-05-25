@@ -44,8 +44,8 @@ public class User implements UserDetails {
     private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
+    @CollectionTable(name = "user_role_names", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role", nullable = false, length = 30)
     private Set<String> roles = Set.of("USER");
 
     @Column(nullable = false)
