@@ -1,0 +1,46 @@
+<div class="container">
+  <h1 class="page-title">Mis Pedidos</h1>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loader-wrap"><div class="loader"></div></div>
+  } @else if (pedidos().length === 0) {
+    <div class="empty">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+      </svg>
+      <h3>Sin pedidos</h3>
+      <p>Aún no se han registrado pedidos.</p>
+      <button class="btn btn-primary" style="margin-top:1rem" (click)="cargarPedidos()">Reintentar</button>
+    </div>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Estado</th>
+          <th>Total</th>
+          <th>Fecha</th>
+          <th>Ítems</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pedido of pedidos(); track pedido.id) {
+          <tr>
+            <td><strong>#{{ pedido.id }}</strong></td>
+            <td>{{ pedido.usuarioId }}</td>
+            <td><span class="badge" [ngClass]="estadoBadge(pedido.estado)">{{ pedido.estado }}</span></td>
+            <td>S/ {{ pedido.total | number:'1.2-2' }}</td>
+            <td>{{ pedido.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ pedido.items.length }} ítem(s)</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

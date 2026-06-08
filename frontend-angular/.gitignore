@@ -1,0 +1,23 @@
+# Compiled output
+dist/
+tmp/
+out-tsc/
+
+# Node
+node_modules/
+
+# IDEs
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Angular
+.angular/
+
+# misc
+.DS_Store
+Thumbs.db

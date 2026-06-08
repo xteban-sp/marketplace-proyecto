@@ -1,0 +1,73 @@
+<div class="container">
+  <h1 class="page-title">Reseñas de Productos</h1>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+  @if (successMsg()) {
+    <div class="alert alert-success">{{ successMsg() }}</div>
+  }
+
+  <div style="display:grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start;">
+
+    <!-- Listado de reseñas -->
+    <div>
+      @if (loading()) {
+        <div class="loader-wrap"><div class="loader"></div></div>
+      } @else if (resenas().length === 0) {
+        <div class="empty">
+          <h3>Sin reseñas</h3>
+          <p>Sé el primero en opinar sobre un producto.</p>
+        </div>
+      } @else {
+        <div style="display:flex; flex-direction:column; gap:1rem">
+          @for (resena of resenas(); track resena.id) {
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem">
+                <span style="font-weight:600; font-size:0.9rem">Producto #{{ resena.productoId }}</span>
+                <span style="color:#f59e0b; font-size:1.1rem">{{ estrellas(resena.calificacion) }}</span>
+              </div>
+              <p style="font-size:0.9rem; color:var(--text)">{{ resena.comentario }}</p>
+              @if (resena.fechaCreacion) {
+                <span style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem; display:block">
+                  {{ resena.fechaCreacion | date:'dd/MM/yyyy' }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Formulario nueva reseña -->
+    <div class="card" style="position:sticky; top:1.5rem">
+      <h3 style="margin-bottom:1rem; font-size:1rem">✍️ Nueva Reseña</h3>
+      <form (ngSubmit)="enviarResena()">
+        <div class="form-group">
+          <label>Producto</label>
+          <select [(ngModel)]="form.productoId" name="productoId">
+            <option value="0" disabled>Selecciona un producto</option>
+            @for (p of productos(); track p.id) {
+              <option [value]="p.id">{{ p.nombre }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Calificación (1-5)</label>
+          <select [(ngModel)]="form.calificacion" name="calificacion">
+            @for (n of [1,2,3,4,5]; track n) {
+              <option [value]="n">{{ n }} {{ estrellas(n) }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Comentario</label>
+          <textarea [(ngModel)]="form.comentario" name="comentario" rows="4" placeholder="Escribe tu opinión..."></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center" [disabled]="enviando()">
+          {{ enviando() ? 'Enviando...' : 'Enviar reseña' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

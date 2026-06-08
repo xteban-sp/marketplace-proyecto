@@ -1,0 +1,72 @@
+<div class="container">
+  <h1 class="page-title">Catálogo de Productos</h1>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+  @if (successMsg()) {
+    <div class="alert alert-success">{{ successMsg() }}</div>
+  }
+
+  <div style="display:grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: start;">
+
+    <!-- Listado de productos -->
+    <div>
+      @if (loading()) {
+        <div class="loader-wrap"><div class="loader"></div></div>
+      } @else if (productos().length === 0) {
+        <div class="empty">
+          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M20 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+          <h3>Sin productos</h3>
+          <p>El catálogo está vacío o el servicio no responde.</p>
+          <button class="btn btn-primary" style="margin-top:1rem" (click)="cargarProductos()">Reintentar</button>
+        </div>
+      } @else {
+        <div class="grid">
+          @for (producto of productos(); track producto.id) {
+            <div class="card">
+              <span class="category">{{ producto.categoria ?? 'Sin categoría' }}</span>
+              <h3>{{ producto.nombre }}</h3>
+              <p>{{ producto.descripcion }}</p>
+              <div class="price">S/ {{ producto.precio | number:'1.2-2' }}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem">
+                <span class="badge" [class.badge-success]="producto.stock > 0" [class.badge-warning]="producto.stock === 0">
+                  {{ producto.stock > 0 ? producto.stock + ' en stock' : 'Agotado' }}
+                </span>
+                <button class="btn btn-primary" [disabled]="producto.stock === 0" (click)="agregarAlCarrito(producto)">
+                  + Agregar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Carrito -->
+    <div class="card" style="position:sticky; top:1.5rem">
+      <h3 style="margin-bottom:1rem; font-size:1rem">🛒 Carrito</h3>
+
+      @if (carrito().length === 0) {
+        <p style="color:var(--text-muted); font-size:0.9rem">Agrega productos para crear un pedido.</p>
+      } @else {
+        @for (item of carrito(); track item.id) {
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.9rem">
+            <div>
+              <div style="font-weight:600">{{ item.nombre }}</div>
+              <div style="color:var(--text-muted)">x{{ item.cantidad }} × S/ {{ item.precio | number:'1.2-2' }}</div>
+            </div>
+            <button style="background:none;border:none;color:var(--error);cursor:pointer;font-size:1.1rem" (click)="quitarDelCarrito(item.id)">✕</button>
+          </div>
+        }
+        <div style="margin-top:1rem; font-weight:700; font-size:1rem">Total: S/ {{ totalCarrito | number:'1.2-2' }}</div>
+        <button class="btn btn-primary" style="width:100%; margin-top:0.75rem; justify-content:center" [disabled]="loadingPedido()" (click)="realizarPedido()">
+          {{ loadingPedido() ? 'Enviando...' : 'Realizar pedido' }}
+        </button>
+      }
+    </div>
+  </div>
+</div>
