@@ -5,6 +5,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import pe.edu.upeu.payment_service.client.MercadoPagoClient;
 import pe.edu.upeu.payment_service.client.OrderClient;
 import pe.edu.upeu.payment_service.dto.CreatePaymentRequest;
 import pe.edu.upeu.payment_service.dto.PaymentResponse;
@@ -20,16 +21,21 @@ import java.util.UUID;
 @Service
 public class PaymentService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PaymentService.class);
+
     private final PaymentRepository paymentRepository;
     private final OrderClient orderClient;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final pe.edu.upeu.payment_service.client.MercadoPagoClient mercadoPagoClient;
 
     public PaymentService(PaymentRepository paymentRepository,
                           OrderClient orderClient,
-                          KafkaTemplate<String, Object> kafkaTemplate) {
+                          KafkaTemplate<String, Object> kafkaTemplate,
+                          pe.edu.upeu.payment_service.client.MercadoPagoClient mercadoPagoClient) {
         this.paymentRepository = paymentRepository;
         this.orderClient = orderClient;
         this.kafkaTemplate = kafkaTemplate;
+        this.mercadoPagoClient = mercadoPagoClient;
     }
 
     @CircuitBreaker(name = "pedidoService", fallbackMethod = "fallbackCrearPagoPorPedidoService")
@@ -49,8 +55,25 @@ public class PaymentService {
 
         String reference = "mp-order-" + request.getPedidoId();
         payment.setReferenciaExterna(reference);
-        payment.setPreferenciaId(UUID.randomUUID().toString());
-        payment.setUrlCheckout("https://www.mercadopago.com/checkout/v1/redirect?pref_id=" + payment.getPreferenciaId());
+
+        // Si hay credenciales de Mercado Pago, crea la preferencia REAL (checkout real).
+        // Si no, usa un modo simulado para no bloquear el desarrollo.
+        boolean preferenciaReal = false;
+        if (mercadoPagoClient.isEnabled()) {
+            try {
+                MercadoPagoClient.MpPreference pref = mercadoPagoClient.createPreference(
+                        "Pago pedido " + request.getPedidoId(), request.getMonto(), reference);
+                payment.setPreferenciaId(pref.id());
+                payment.setUrlCheckout(pref.initPoint());
+                preferenciaReal = true;
+            } catch (Exception e) {
+                log.warn("Fallo al crear preferencia en Mercado Pago, se usa modo simulado: {}", e.getMessage());
+            }
+        }
+        if (!preferenciaReal) {
+            payment.setPreferenciaId(UUID.randomUUID().toString());
+            payment.setUrlCheckout("https://www.mercadopago.com/checkout/v1/redirect?pref_id=" + payment.getPreferenciaId());
+        }
 
         return toResponse(paymentRepository.save(payment));
     }

@@ -9,12 +9,13 @@ import org.springframework.stereotype.Repository;
 import pe.edu.upeu.product_service.entity.Product;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // Buscar todos los productos activos de un vendedor
-    List<Product> findBySellerIdAndActiveTrue(Long sellerId);
+    List<Product> findBySellerIdAndActiveTrue(UUID sellerId);
 
     // Buscar todos los productos activos de una categoría
     List<Product> findByCategoryIdAndActiveTrue(Long categoryId);

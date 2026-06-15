@@ -51,6 +51,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    // Token para confirmar la cuenta por email (null si ya está verificada).
+    @Column(length = 100)
+    private String verificationToken;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

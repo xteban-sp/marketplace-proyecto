@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class ProductResponseDTO {
     private Boolean active;
 
     // Del vendedor — se enriquece con Feign desde user-service
-    private Long sellerId;
+    private UUID sellerId;
     private String sellerName;     // Nombre del vendedor (viene del UserClient)
 
     // Categoría embebida en la respuesta

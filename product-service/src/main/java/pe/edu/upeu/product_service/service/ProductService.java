@@ -16,6 +16,7 @@ import pe.edu.upeu.product_service.repository.CategoryRepository;
 import pe.edu.upeu.product_service.repository.ProductRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -51,7 +52,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponseDTO> getBySeller(Long sellerId) {
+    public List<ProductResponseDTO> getBySeller(UUID sellerId) {
         return productRepository.findBySellerIdAndActiveTrue(sellerId)
                 .stream().map(this::toResponse).toList();
     }

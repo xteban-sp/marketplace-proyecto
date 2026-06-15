@@ -11,8 +11,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,8 +26,10 @@ import pe.edu.upeu.auth_service.dto.AuthResponse;
 import pe.edu.upeu.auth_service.entity.User;
 import pe.edu.upeu.auth_service.repository.UserRepository;
 import pe.edu.upeu.auth_service.security.JwtUtil;
+import pe.edu.upeu.auth_service.service.MailService;
 import pe.edu.upeu.auth_service.service.ResilienceService;
 
+import java.net.URI;
 import java.util.*;
 
 @RestController
@@ -39,6 +43,15 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final ResilienceService resilienceService;
+    private final MailService mailService;
+
+    // URL base pública (gateway) para armar el enlace de verificación.
+    @Value("${app.verify-base-url:http://localhost:8080}")
+    private String verifyBaseUrl;
+
+    // A dónde redirigir tras verificar (el frontend).
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Operation(summary = "Registrar nuevo usuario", description = "Crea cuenta con validación de DNI, email, código universitario y celular")
     @ApiResponses({
@@ -75,6 +88,11 @@ public class AuthController {
         // FIX: el rol siempre es USER al registrarse — el cliente no puede elegir SELLER/ADMIN
         Set<String> assignedRoles = Set.of("USER");
 
+        // Si el correo está configurado, la cuenta nace SIN verificar y se exige confirmación.
+        // Si no, se activa al instante (modo desarrollo, sin bloquear).
+        boolean requiresVerification = mailService.isEnabled();
+        String verificationToken = requiresVerification ? UUID.randomUUID().toString() : null;
+
         User user = User.builder()
                 .fullName(request.getFullName())
                 .dni(request.getDni())
@@ -84,7 +102,8 @@ public class AuthController {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(assignedRoles)
-                .enabled(true)
+                .enabled(!requiresVerification)
+                .verificationToken(verificationToken)
                 .build();
 
         try {
@@ -95,8 +114,39 @@ public class AuthController {
                     .body(new AuthResponse(null, null, null, "El usuario ya existe (conflicto de datos)"));
         }
 
+        if (requiresVerification) {
+            String link = verifyBaseUrl + "/api/auth/verify?token=" + verificationToken;
+            try {
+                mailService.sendVerification(user.getEmail(), link);
+            } catch (Exception e) {
+                // No tumbamos el registro si el correo falla; el usuario podrá reintentar.
+                return ResponseEntity.ok(new AuthResponse(null, null, user.getUsername(),
+                        "Cuenta creada, pero no se pudo enviar el correo de verificación. Contacta al soporte."));
+            }
+            // Sin token: el cliente debe confirmar el correo antes de iniciar sesión.
+            return ResponseEntity.ok(new AuthResponse(null, null, user.getUsername(),
+                    "Te enviamos un correo para activar tu cuenta. Revisa tu bandeja."));
+        }
+
         String token = jwtUtil.generateToken(user);
         return ResponseEntity.ok(new AuthResponse(token, toRoleAuthorities(assignedRoles), user.getUsername(), null));
+    }
+
+    @GetMapping("/verify")
+    @Operation(summary = "Verificar cuenta", description = "Activa la cuenta a partir del token enviado por correo y redirige al frontend")
+    public ResponseEntity<Void> verify(@RequestParam String token) {
+        return userRepository.findByVerificationToken(token)
+                .map(user -> {
+                    user.setEnabled(true);
+                    user.setVerificationToken(null);
+                    userRepository.save(user);
+                    return ResponseEntity.status(HttpStatus.FOUND)
+                            .location(URI.create(frontendUrl + "/login?verified=1"))
+                            .<Void>build();
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.FOUND)
+                        .location(URI.create(frontendUrl + "/login?verified=0"))
+                        .build());
     }
 
     @Operation(summary = "Iniciar sesión", description = "Autentica usuario y retorna JWT con roles")
@@ -111,6 +161,9 @@ public class AuthController {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
+        } catch (DisabledException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse(null, null, null, "Tu cuenta no está verificada. Revisa el correo de activación."));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse(null, null, null, "Credenciales incorrectas"));
@@ -199,6 +252,23 @@ public class AuthController {
                     "roles", toRoleAuthorities(roles),
                     "message", "Rol SELLER habilitado"
             ));
+    }
+
+    // El propio usuario se convierte en vendedor (autoservicio) y recibe un token actualizado con el rol SELLER.
+    @PostMapping("/become-seller")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Convertirme en vendedor", description = "Asigna el rol SELLER al usuario autenticado y devuelve un token nuevo")
+    public ResponseEntity<AuthResponse> becomeSeller(org.springframework.security.core.Authentication authentication) {
+        User user = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Set<String> roles = new HashSet<>(ensureUserHasAtLeastOneRole(user));
+        roles.add("SELLER");
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(user);
+        return ResponseEntity.ok(new AuthResponse(token, toRoleAuthorities(roles), user.getUsername(), null));
     }
 
     @GetMapping("/health/external")

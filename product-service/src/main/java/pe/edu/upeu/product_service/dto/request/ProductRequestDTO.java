@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -36,7 +37,7 @@ public class ProductRequestDTO {
     private String imageUrl;
 
     @NotNull(message = "El ID del vendedor es obligatorio")
-    private Long sellerId;
+    private UUID sellerId;
 
     @NotNull(message = "El ID de categoría es obligatorio")
     @JsonAlias("categoriaId")

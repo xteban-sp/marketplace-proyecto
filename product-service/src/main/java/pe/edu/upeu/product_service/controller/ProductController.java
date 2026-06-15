@@ -12,12 +12,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upeu.product_service.dto.request.ProductRequestDTO;
 import pe.edu.upeu.product_service.dto.response.ProductResponseDTO;
 import pe.edu.upeu.product_service.service.ProductService;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping({"/api/productos", "/api/products"})
@@ -34,6 +36,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
     })
     @PostMapping
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<ProductResponseDTO> create(@Valid @RequestBody ProductRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(dto));
     }
@@ -77,7 +80,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Vendedor no encontrado")
     })
     @GetMapping("/seller/{sellerId}")
-    public ResponseEntity<List<ProductResponseDTO>> getBySeller(@PathVariable Long sellerId) {
+    public ResponseEntity<List<ProductResponseDTO>> getBySeller(@PathVariable UUID sellerId) {
         return ResponseEntity.ok(productService.getBySeller(sellerId));
     }
 
@@ -95,6 +98,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Producto o categoría no encontrada")
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<ProductResponseDTO> update(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequestDTO dto) {
@@ -107,6 +111,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();

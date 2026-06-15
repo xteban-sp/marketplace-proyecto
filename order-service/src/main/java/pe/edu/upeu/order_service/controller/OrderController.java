@@ -2,6 +2,7 @@ package pe.edu.upeu.order_service.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,11 +50,13 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('ADMIN','SERVICE')")
     public OrderResponse updateStatus(@PathVariable UUID id, @RequestParam OrderStatus estado) {
         return orderService.updateStatus(id, estado);
     }
 
     @PatchMapping("/{id}/estado-pago")
+    @PreAuthorize("hasAnyRole('ADMIN','SERVICE')")
     public OrderResponse updatePaymentStatus(@PathVariable UUID id, @RequestParam PaymentStatus estadoPago) {
         return orderService.updatePaymentStatus(id, estadoPago);
     }

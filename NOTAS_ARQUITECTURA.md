@@ -150,3 +150,23 @@ Se corrigieron los siguientes problemas de seguridad y logica en `auth-service`:
 | 9 | `GlobalExceptionHandler.java` | `AuthenticationException` y `AccessDeniedException` no manejadas | Handlers con 401 y 403 respectivamente |
 | 10 | `SecurityConfig.java` | Todo `/api/auth/**` era publico, exponiendo endpoints admin | Rutas granulares: solo `/register`, `/login`, `/validate` son publicos |
 | 11 | `application.properties` | `jwt.secret` hardcodeado en texto plano en el repositorio | Secret leido desde variable de entorno `JWT_SECRET` |
+
+## 9) Endurecimiento de seguridad - Junio 2026
+
+Se completo la capa de seguridad que estaba pendiente ("FALTA CONFIRMAR" del V6.0):
+
+| # | Area | Problema | Fix aplicado |
+|---|---|---|---|
+| 1 | Config | `jwt.secret` solo existia en `auth-service`; el resto referenciaba `${jwt.secret}` sin definirlo (no podian validar tokens y los valores ni coincidian) | Secret centralizado en `config-repo/application.properties` (servido por Config Server a todos), leido de `JWT_SECRET`. Quitado el hardcode de `auth-service.properties` |
+| 2 | `payment-service` | `SecurityConfig` con `anyRequest().permitAll()`: cualquiera podia crear/consultar pagos sin token | `JwtService` + `JwtAuthenticationFilter` (deps jjwt). Todo exige JWT; el webhook de Mercado Pago queda publico |
+| 3 | `review-service` | `permitAll()` total | Filtro JWT. POST resena requiere autenticacion; GET resenas publico |
+| 4 | `messaging-service` | `permitAll()` total: las conversaciones privadas quedaban expuestas | Filtro JWT; todo requiere autenticacion |
+| 5 | `notification-service` | `permitAll()` total | Filtro JWT; todo requiere autenticacion |
+| 6 | `recommendation-service` | `permitAll()` total | Filtro JWT; todo requiere autenticacion |
+| 7 | `product-service` | Roles autenticados pero nunca autorizados: cualquier USER podia crear/borrar productos y categorias | `@PreAuthorize` en escrituras: productos crear/editar/borrar -> `SELLER` o `ADMIN`; categorias -> `ADMIN` |
+
+### Pendientes / notas
+
+- El `api-gateway` mantiene `permitAll()` a proposito: cada microservicio valida su propio JWT (modelo descentralizado). Si se quiere validacion centralizada, anadir un filtro JWT en el gateway.
+- El claim `privilegios` que leen los filtros aun no lo emite `auth-service` en `JwtUtil.generateToken` (solo emite `roles`). Si se van a usar privilegios finos, hay que anadirlo al token.
+- `order-service` ya exigia autenticacion; sus endpoints de cambio de estado los consume `payment-service` via REST, por eso no se restringieron a un rol (romperia la llamada entre servicios sin propagacion de token).

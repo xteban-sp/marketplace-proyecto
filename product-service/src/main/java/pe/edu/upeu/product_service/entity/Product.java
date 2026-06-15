@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "products")
@@ -40,9 +41,9 @@ public class Product {
     @Column(nullable = false)
     private Boolean active = true;
 
-    // ID del vendedor — viene del user-service (no FK real entre microservicios)
+    // ID del vendedor (UUID del usuario en auth-service) — no FK real entre microservicios
     @Column(nullable = false)
-    private Long sellerId;
+    private UUID sellerId;
 
     // Relación con Category — muchos productos a una categoría
     @ManyToOne(fetch = FetchType.LAZY)
