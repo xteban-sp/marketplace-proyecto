@@ -36,7 +36,7 @@ public class ProductRequestDTO {
     @JsonAlias("imagenUrl")
     private String imageUrl;
 
-    @NotNull(message = "El ID del vendedor es obligatorio")
+    // El vendedor se toma del token JWT en el servidor; no se exige en el body.
     private UUID sellerId;
 
     @NotNull(message = "El ID de categoría es obligatorio")

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const CartContext = createContext(null)
 
@@ -39,7 +39,12 @@ export function CartProvider({ children }) {
   }
 
   function setQty(id, qty) {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i)))
+    setItems((prev) =>
+      prev.map((i) =>
+        // No bajar de 1 ni superar el stock disponible (fallback 99 si no se conoce).
+        i.id === id ? { ...i, qty: Math.min(Math.max(1, qty), i.stock || 99) } : i,
+      ),
+    )
   }
 
   function clear() {
@@ -49,11 +54,12 @@ export function CartProvider({ children }) {
   const count = items.reduce((n, i) => n + i.qty, 0)
   const total = items.reduce((s, i) => s + i.price * i.qty, 0)
 
-  return (
-    <CartContext.Provider value={{ items, add, remove, setQty, clear, count, total }}>
-      {children}
-    </CartContext.Provider>
+  const value = useMemo(
+    () => ({ items, add, remove, setQty, clear, count, total }),
+    [items, count, total],
   )
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }
 
 export function useCart() {

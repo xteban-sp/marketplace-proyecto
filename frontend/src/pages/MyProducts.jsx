@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api, { errorMessage } from '../api/client.js'
 import { useAuth } from '../auth/AuthContext.jsx'
-
-function money(v) {
-  return `S/ ${Number(v || 0).toFixed(2)}`
-}
+import { money } from '../utils/format.js'
 
 export default function MyProducts() {
   const { user } = useAuth()
@@ -59,7 +56,7 @@ export default function MyProducts() {
           {products.map((p) => (
             <div className="myrow" key={p.id}>
               <div className="myrow__media">
-                {p.imageUrl ? <img src={p.imageUrl} alt={p.name} /> : <span>{p.name.charAt(0)}</span>}
+                {p.imageUrl ? <img src={p.imageUrl} alt={p.name} /> : <span>{(p.name || '?').charAt(0)}</span>}
               </div>
               <div className="myrow__info">
                 <Link to={`/producto/${p.id}`} className="myrow__name">{p.name}</Link>

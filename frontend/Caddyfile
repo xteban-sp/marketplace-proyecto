@@ -1,0 +1,15 @@
+# SITE_ADDRESS lo define docker-compose (tu dominio DuckDNS).
+# Caddy obtiene el certificado HTTPS automáticamente (Let's Encrypt).
+{$SITE_ADDRESS} {
+    # Las llamadas al API van al gateway (mismo dominio, sin CORS).
+    handle /api/* {
+        reverse_proxy api-gateway:8080
+    }
+
+    # Todo lo demás es el SPA de React.
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}

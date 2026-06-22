@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api, { errorMessage } from '../api/client.js'
-import { useAuth } from '../auth/AuthContext.jsx'
 import ImageUploader from '../components/ImageUploader.jsx'
 
 export default function EditProduct() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
   const [categories, setCategories] = useState([])
   const [form, setForm] = useState(null)
   const [error, setError] = useState('')
@@ -41,6 +39,7 @@ export default function EditProduct() {
     if (!form.name.trim()) return setError('Ponle un nombre al producto')
     if (!form.categoryId) return setError('Elige una categoría')
     if (Number(form.price) <= 0) return setError('El precio debe ser mayor a 0')
+    if (Number(form.stock) < 0) return setError('El stock no puede ser negativo')
 
     setLoading(true)
     try {
@@ -50,7 +49,10 @@ export default function EditProduct() {
         price: Number(form.price),
         stock: Number(form.stock),
         categoryId: Number(form.categoryId),
-        sellerId: user.userId,
+        // El backend DEBE derivar el vendedor del JWT, no confiar en un sellerId
+        // enviado por el cliente (riesgo de suplantación de otro vendedor).
+        // Si el backend todavía EXIGE sellerId en el body, descomenta la línea:
+        // sellerId: user.userId,
         imageUrl: form.imageUrl || null,
       }
       await api.put(`/api/productos/${id}`, payload)

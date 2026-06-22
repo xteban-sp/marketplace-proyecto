@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import api from '../api/client.js'
 
 const AuthContext = createContext(null)
@@ -12,12 +12,31 @@ function decodeJwt(token) {
   }
 }
 
+// Comprueba si el token está vencido según su claim `exp` (segundos epoch).
+// Si no trae `exp`, se considera válido (no podemos saberlo en cliente).
+function isTokenExpired(token) {
+  if (!token) return true
+  const { exp } = decodeJwt(token)
+  if (!exp) return false
+  return Date.now() >= exp * 1000
+}
+
+// Estado inicial: descarta la sesión si el token guardado ya venció.
+function readInitialSession() {
+  const token = localStorage.getItem('mp_token')
+  if (!token || isTokenExpired(token)) {
+    localStorage.removeItem('mp_token')
+    localStorage.removeItem('mp_user')
+    return { token: null, user: null }
+  }
+  const raw = localStorage.getItem('mp_user')
+  return { token, user: raw ? JSON.parse(raw) : null }
+}
+
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('mp_token'))
-  const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem('mp_user')
-    return raw ? JSON.parse(raw) : null
-  })
+  const initial = readInitialSession()
+  const [token, setToken] = useState(initial.token)
+  const [user, setUser] = useState(initial.user)
 
   function persist(authResponse) {
     const { token: newToken, username, roles } = authResponse
@@ -66,11 +85,12 @@ export function AuthProvider({ children }) {
     return roles.some((r) => r === role || r === `ROLE_${role}`)
   }
 
-  return (
-    <AuthContext.Provider value={{ token, user, login, register, logout, hasRole, becomeSeller }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ token, user, login, register, logout, hasRole, becomeSeller }),
+    [token, user],
   )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

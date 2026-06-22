@@ -1,0 +1,260 @@
+# =====================================================================
+# Despliegue completo (producción) — pensado para una VM (Oracle Free, etc.)
+# Levanta infra + microservicios + gateway + frontend (Caddy con HTTPS).
+# Uso:  docker compose -f docker-compose.prod.yml up -d --build
+# Requiere un archivo .env (ver .env.deploy.example).
+# =====================================================================
+
+x-common-env: &common-env
+  CONFIG_SERVER_URL: http://config-service:8888
+  EUREKA_DEFAULT_ZONE: http://eureka-server:8761/eureka
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+  JWT_SECRET: ${JWT_SECRET}
+
+services:
+  # ---------------- Infraestructura ----------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks: [marketplace-net]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    restart: unless-stopped
+    depends_on: [zookeeper]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks: [marketplace-net]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks: [marketplace-net]
+
+  postgres-auth:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: auth_db, POSTGRES_USER: auth_user, POSTGRES_PASSWORD: auth_pass }
+    volumes: [postgres_auth_data:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"], interval: 10s, timeout: 5s, retries: 10 }
+    networks: [marketplace-net]
+
+  postgres-order:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: order_db, POSTGRES_USER: order_user, POSTGRES_PASSWORD: order_pass }
+    volumes: [postgres_order_data:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U order_user -d order_db"], interval: 10s, timeout: 5s, retries: 10 }
+    networks: [marketplace-net]
+
+  postgres-messaging:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: messaging_db, POSTGRES_USER: messaging_user, POSTGRES_PASSWORD: messaging_pass }
+    volumes: [postgres_messaging_data:/var/lib/postgresql/data]
+    networks: [marketplace-net]
+
+  postgres-notification:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: notification_db, POSTGRES_USER: notification_user, POSTGRES_PASSWORD: notification_pass }
+    volumes: [postgres_notification_data:/var/lib/postgresql/data]
+    networks: [marketplace-net]
+
+  postgres-recommendation:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: recommendation_db, POSTGRES_USER: recommendation_user, POSTGRES_PASSWORD: recommendation_pass }
+    volumes: [postgres_recommendation_data:/var/lib/postgresql/data]
+    networks: [marketplace-net]
+
+  postgres-review:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: review_db, POSTGRES_USER: review_user, POSTGRES_PASSWORD: review_pass }
+    volumes: [postgres_review_data:/var/lib/postgresql/data]
+    networks: [marketplace-net]
+
+  mysql-product:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment: { MYSQL_DATABASE: product_db, MYSQL_USER: product_user, MYSQL_PASSWORD: product_pass, MYSQL_ROOT_PASSWORD: root_product }
+    volumes: [mysql_product_data:/var/lib/mysql]
+    healthcheck: { test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -proot_product"], interval: 10s, timeout: 5s, retries: 10 }
+    networks: [marketplace-net]
+
+  mysql-payment:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment: { MYSQL_DATABASE: payment_db, MYSQL_USER: payment_user, MYSQL_PASSWORD: payment_pass, MYSQL_ROOT_PASSWORD: root_payment }
+    volumes: [mysql_payment_data:/var/lib/mysql]
+    healthcheck: { test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -proot_payment"], interval: 10s, timeout: 5s, retries: 10 }
+    networks: [marketplace-net]
+
+  # ---------------- Plataforma ----------------
+  eureka-server:
+    build: ./eureka-server
+    restart: unless-stopped
+    networks: [marketplace-net]
+
+  config-service:
+    build: ./config-service
+    restart: unless-stopped
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/config-repo
+    volumes:
+      - ./config-repo:/config-repo:ro
+    depends_on: [eureka-server]
+    networks: [marketplace-net]
+
+  # ---------------- Microservicios ----------------
+  auth-service:
+    build: ./auth-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: auth_user
+      SPRING_DATASOURCE_PASSWORD: auth_pass
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin12345!}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      APP_FRONTEND_URL: ${PUBLIC_URL:-http://localhost}
+      APP_VERIFY_BASE_URL: ${PUBLIC_URL:-http://localhost}
+    depends_on: [config-service, postgres-auth]
+    networks: [marketplace-net]
+
+  product-service:
+    build: ./product-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-product:3306/product_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: product_user
+      SPRING_DATASOURCE_PASSWORD: product_pass
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on: [config-service, mysql-product, redis]
+    networks: [marketplace-net]
+
+  order-service:
+    build: ./order-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/order_db
+      SPRING_DATASOURCE_USERNAME: order_user
+      SPRING_DATASOURCE_PASSWORD: order_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on: [config-service, postgres-order, kafka]
+    networks: [marketplace-net]
+
+  payment-service:
+    build: ./payment-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-payment:3306/payment_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: payment_user
+      SPRING_DATASOURCE_PASSWORD: payment_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN:-}
+      MERCADOPAGO_SUCCESS_URL: ${PUBLIC_URL:-http://localhost}/pago/exito
+      MERCADOPAGO_PENDING_URL: ${PUBLIC_URL:-http://localhost}/pago/pendiente
+      MERCADOPAGO_FAILURE_URL: ${PUBLIC_URL:-http://localhost}/pago/error
+    depends_on: [config-service, mysql-payment, kafka]
+    networks: [marketplace-net]
+
+  messaging-service:
+    build: ./messaging-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-messaging:5432/messaging_db
+      SPRING_DATASOURCE_USERNAME: messaging_user
+      SPRING_DATASOURCE_PASSWORD: messaging_pass
+    depends_on: [config-service, postgres-messaging]
+    networks: [marketplace-net]
+
+  notification-service:
+    build: ./notification-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-notification:5432/notification_db
+      SPRING_DATASOURCE_USERNAME: notification_user
+      SPRING_DATASOURCE_PASSWORD: notification_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on: [config-service, postgres-notification, kafka]
+    networks: [marketplace-net]
+
+  recommendation-service:
+    build: ./recommendation-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-recommendation:5432/recommendation_db
+      SPRING_DATASOURCE_USERNAME: recommendation_user
+      SPRING_DATASOURCE_PASSWORD: recommendation_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on: [config-service, postgres-recommendation, kafka, redis]
+    networks: [marketplace-net]
+
+  review-service:
+    build: ./review-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-review:5432/review_db
+      SPRING_DATASOURCE_USERNAME: review_user
+      SPRING_DATASOURCE_PASSWORD: review_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on: [config-service, postgres-review, kafka]
+    networks: [marketplace-net]
+
+  api-gateway:
+    build: ./api-gateway
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      CORS_ALLOWED_ORIGINS: ${PUBLIC_URL:-http://localhost}
+    depends_on: [config-service, eureka-server]
+    networks: [marketplace-net]
+
+  # ---------------- Frontend + HTTPS (Caddy) ----------------
+  web:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      # Local: :80 (HTTP en localhost). Remoto: pon SITE_ADDRESS=tudominio para HTTPS automatico.
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on: [api-gateway]
+    networks: [marketplace-net]
+
+networks:
+  marketplace-net:
+    driver: bridge
+
+volumes:
+  postgres_auth_data:
+  postgres_order_data:
+  postgres_messaging_data:
+  postgres_notification_data:
+  postgres_recommendation_data:
+  postgres_review_data:
+  mysql_product_data:
+  mysql_payment_data:

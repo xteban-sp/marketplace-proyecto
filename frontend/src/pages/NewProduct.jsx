@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { errorMessage } from '../api/client.js'
-import { useAuth } from '../auth/AuthContext.jsx'
 import ImageUploader from '../components/ImageUploader.jsx'
 
 export default function NewProduct() {
-  const { user } = useAuth()
   const navigate = useNavigate()
   const [categories, setCategories] = useState([])
   const [form, setForm] = useState({
@@ -43,7 +41,10 @@ export default function NewProduct() {
         price: Number(form.price),
         stock: Number(form.stock),
         categoryId: Number(form.categoryId),
-        sellerId: user.userId,
+        // El backend DEBE derivar el vendedor del JWT, no confiar en un sellerId
+        // enviado por el cliente (riesgo de suplantación de otro vendedor).
+        // Si el backend todavía EXIGE sellerId en el body, descomenta la línea:
+        // sellerId: user.userId,
         imageUrl: form.imageUrl || null,
       }
       const { data } = await api.post('/api/productos', payload)

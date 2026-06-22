@@ -36,7 +36,7 @@ export default function Navbar() {
 
         <Link to="/carrito" className="nav__cart" aria-label="Carrito">
           🛒
-          {count > 0 && <span className="nav__cart-badge">{count}</span>}
+          {count > 0 && <span className="nav__cart-badge" key={count}>{count}</span>}
         </Link>
 
         <span className="nav__user">

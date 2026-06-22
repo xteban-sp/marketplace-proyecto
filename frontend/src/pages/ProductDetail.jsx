@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import api, { errorMessage } from '../api/client.js'
 import { useCart } from '../cart/CartContext.jsx'
-
-function money(value) {
-  const n = Number(value ?? 0)
-  return `S/ ${n.toFixed(2)}`
-}
+import { money } from '../utils/format.js'
 
 export default function ProductDetail() {
   const { id } = useParams()
@@ -64,7 +60,7 @@ export default function ProductDetail() {
           <p className="detail__desc">{product.description || 'Sin descripción.'}</p>
 
           <div className="detail__actions">
-            <button className="btn btn--primary btn--lg" disabled={product.stock <= 0} onClick={addToCart}>
+            <button className={`btn btn--primary btn--lg ${added ? 'btn--added' : ''}`} disabled={product.stock <= 0} onClick={addToCart}>
               {product.stock > 0 ? (added ? '✓ Agregado' : 'Agregar al carrito') : 'Agotado'}
             </button>
             <button className="btn btn--ghost btn--lg" onClick={() => navigate('/carrito')}>

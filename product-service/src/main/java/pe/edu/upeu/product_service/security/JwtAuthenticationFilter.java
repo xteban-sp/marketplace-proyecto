@@ -40,6 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             Claims claims = jwtService.parseClaims(token);
             String username = claims.getSubject();
+            // userId (UUID) viene como claim; lo usamos como principal para identificar al vendedor.
+            String userId = claims.get("userId", String.class);
+            String principal = (userId != null && !userId.isBlank()) ? userId : username;
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.addAll(extractList(claims, "roles").stream()
                     .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
@@ -50,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .toList());
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    new UsernamePasswordAuthenticationToken(principal, null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);

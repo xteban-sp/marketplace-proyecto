@@ -1,9 +1,5 @@
 import { Link } from 'react-router-dom'
-
-function money(value) {
-  const n = Number(value ?? 0)
-  return `S/ ${n.toFixed(2)}`
-}
+import { money } from '../utils/format.js'
 
 export default function ProductCard({ product }) {
   return (

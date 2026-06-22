@@ -37,7 +37,9 @@ public class ProductController {
     })
     @PostMapping
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
-    public ResponseEntity<ProductResponseDTO> create(@Valid @RequestBody ProductRequestDTO dto) {
+    public ResponseEntity<ProductResponseDTO> create(@Valid @RequestBody ProductRequestDTO dto,
+                                                     org.springframework.security.core.Authentication authentication) {
+        dto.setSellerId(UUID.fromString(authentication.getName())); // el vendedor es el usuario del token
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(dto));
     }
 
@@ -101,7 +103,9 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<ProductResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody ProductRequestDTO dto) {
+            @Valid @RequestBody ProductRequestDTO dto,
+            org.springframework.security.core.Authentication authentication) {
+        dto.setSellerId(UUID.fromString(authentication.getName()));
         return ResponseEntity.ok(productService.update(id, dto));
     }
 

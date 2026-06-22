@@ -25,7 +25,7 @@ export default function ImageUploader({ value, onUploaded }) {
   if (!cloudinaryConfigured()) {
     return (
       <div className="uploader uploader--off">
-        Sube de fotos deshabilitada: falta configurar Cloudinary en el <code>.env</code>.
+        Subida de fotos deshabilitada: falta configurar Cloudinary en el <code>.env</code>.
         Por ahora puedes pegar una URL de imagen.
       </div>
     )
@@ -33,9 +33,14 @@ export default function ImageUploader({ value, onUploaded }) {
 
   return (
     <div className="uploader">
-      <div className="uploader__preview" onClick={() => inputRef.current?.click()}>
+      <button
+        type="button"
+        className="uploader__preview"
+        onClick={() => inputRef.current?.click()}
+        aria-label={value ? 'Cambiar foto' : 'Subir o tomar foto'}
+      >
         {value ? <img src={value} alt="Vista previa" /> : <span>+ Foto</span>}
-      </div>
+      </button>
       <div className="uploader__actions">
         <button type="button" className="btn btn--ghost" onClick={() => inputRef.current?.click()} disabled={uploading}>
           {uploading ? 'Subiendo…' : value ? 'Cambiar foto' : 'Subir / tomar foto'}

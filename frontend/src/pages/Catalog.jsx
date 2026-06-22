@@ -12,6 +12,8 @@ export default function Catalog() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [name, setName] = useState('')
+  // Término ya "debounced": es el que realmente dispara la petición a la API.
+  const [debouncedName, setDebouncedName] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -26,15 +28,24 @@ export default function Catalog() {
       .catch(() => setCategories([]))
   }, [])
 
-  // Carga productos cuando cambian filtros o página.
+  // Debounce (~300ms): retrasa la búsqueda hasta que el usuario deja de teclear.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedName(name.trim())
+      setPage(0)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [name])
+
+  // Carga productos cuando cambian filtros (debounced) o página.
   useEffect(() => {
     let active = true
     setLoading(true)
     setError('')
-    const hasFilter = name.trim() || categoryId
+    const hasFilter = debouncedName || categoryId
     const url = hasFilter ? '/api/productos/search' : '/api/productos'
     const params = { page, size: 12 }
-    if (name.trim()) params.name = name.trim()
+    if (debouncedName) params.name = debouncedName
     if (categoryId) params.categoryId = categoryId
 
     api
@@ -55,10 +66,9 @@ export default function Catalog() {
     return () => {
       active = false
     }
-  }, [name, categoryId, page])
+  }, [debouncedName, categoryId, page])
 
   function onSearchChange(e) {
-    setPage(0)
     setName(e.target.value)
   }
   function onCategoryChange(e) {
@@ -104,7 +114,21 @@ export default function Catalog() {
       {error && <div className="alert alert--page">{error}</div>}
 
       {loading ? (
-        <div className="state">Cargando productos…</div>
+        <div className="grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div className="card card--skeleton" key={i}>
+              <div className="card__media skeleton" />
+              <div className="card__body">
+                <div className="skeleton sk-line sk-line--title" />
+                <div className="skeleton sk-line sk-line--sm" style={{ marginTop: '0.5rem' }} />
+                <div className="sk-foot">
+                  <div className="skeleton sk-line" />
+                  <div className="skeleton sk-line" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : products.length === 0 ? (
         <div className="state">No hay productos que coincidan.</div>
       ) : (

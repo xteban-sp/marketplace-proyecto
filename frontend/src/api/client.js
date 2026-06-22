@@ -1,8 +1,14 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-})
+// baseURL:
+// 1) Si VITE_API_URL está definida, se respeta (override explícito).
+// 2) En desarrollo, fallback al gateway local.
+// 3) En producción, cadena vacía = mismo origen: las rutas /api/* las
+//    resuelve Caddy hacia el gateway (sin CORS, sin hardcodear el dominio).
+const baseURL =
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8080' : '')
+
+const api = axios.create({ baseURL })
 
 // Inyecta el JWT guardado en cada petición.
 api.interceptors.request.use((config) => {
