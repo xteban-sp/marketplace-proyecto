@@ -85,6 +85,19 @@
 			<artifactId>feign-hc5</artifactId>
 		</dependency>
 
+		<!-- Jackson for JSON serialization -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+
+		<!-- Niubiz Payment Gateway -->
+		<dependency>
+			<groupId>com.niubiz</groupId>
+			<artifactId>niubiz-java-sdk</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
