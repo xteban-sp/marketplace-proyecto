@@ -1,1 +1,1 @@
-{"timestamp":"2026-06-22T21:55:18.672+00:00","status":500,"error":"Internal Server Error","path":"/api/pedidos"}
+{"id":"54242b59-295e-47dd-8073-e80350d931c3","compradorId":"969aa1af-2e89-40d3-bc5a-1ee493258eb5","vendedorId":"3d775a0d-831c-4358-8a6f-993e4f125fd9","montoTotal":50.00,"estado":"CREATED","estadoPago":"PENDING","items":[{"productoId":2,"tituloProducto":"Laptop de Prueba","quantity":1,"precioUnitario":50.00,"subtotal":50.00}],"createdAt":"2026-06-22T16:59:31.0111839"}

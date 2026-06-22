@@ -3,10 +3,10 @@
   "vendedorId": "3d775a0d-831c-4358-8a6f-993e4f125fd9",
   "items": [
     {
-      "productoId": "",
+      "productoId": 2,
       "quantity": 1,
-      "precioUnitario": 1500.00,
-      "tituloProducto": "Laptop Gaming"
+      "precioUnitario": 50.00,
+      "tituloProducto": "Laptop de Prueba"
     }
   ]
 }
