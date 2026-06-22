@@ -1,0 +1,10 @@
+{
+  "username": "vendedor1",
+  "email": "vendedor@example.com",
+  "password": "Password123!",
+  "dni": "87654321",
+  "fullName": "Vendedor Test",
+  "universityCode": "202109876",
+  "phone": "912345678",
+  "role": "SELLER"
+}

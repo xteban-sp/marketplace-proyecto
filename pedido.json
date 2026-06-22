@@ -1,0 +1,12 @@
+{
+  "compradorId": "969aa1af-2e89-40d3-bc5a-1ee493258eb5",
+  "vendedorId": "3d775a0d-831c-4358-8a6f-993e4f125fd9",
+  "items": [
+    {
+      "productoId": "",
+      "quantity": 1,
+      "precioUnitario": 1500.00,
+      "tituloProducto": "Laptop Gaming"
+    }
+  ]
+}
