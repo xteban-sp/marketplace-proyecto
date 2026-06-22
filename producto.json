@@ -1,0 +1,8 @@
+{
+  "name": "Laptop Gaming",
+  "description": "Laptop de alto rendimiento",
+  "price": 1500.00,
+  "stock": 5,
+  "categoryId": 1,
+  "sellerId": "3d775a0d-831c-4358-8a6f-993e4f125fd9"
+}
