@@ -1,0 +1,123 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "title": "Marketplace · Resiliencia e Infra",
+  "uid": "marketplace-infra",
+  "version": 1,
+  "time": { "from": "now-30m", "to": "now" },
+  "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(up, service)",
+        "includeAll": true,
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Resilience4j (Circuit Breakers)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "state-timeline",
+      "title": "Estado de Circuit Breakers (1 = en ese estado)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "" }, "1": { "text": "●" } } }
+          ]
+        }
+      },
+      "targets": [
+        { "expr": "resilience4j_circuitbreaker_state{service=~\"$service\", state=~\"open|half_open|closed\"} == 1", "legendFormat": "{{service}} / {{name}} / {{state}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Tasa de fallo de los breakers (%)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "targets": [
+        { "expr": "resilience4j_circuitbreaker_failure_rate{service=~\"$service\"}", "legendFormat": "{{service}} / {{name}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Llamadas fallidas por segundo",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "targets": [
+        { "expr": "sum by (service, name) (rate(resilience4j_circuitbreaker_calls_seconds_count{service=~\"$service\", kind=\"failed\"}[1m]))", "legendFormat": "{{service}} / {{name}}" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Base de datos (HikariCP)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Conexiones activas",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        { "expr": "hikaricp_connections_active{service=~\"$service\"}", "legendFormat": "{{service}} ({{pool}})" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Conexiones en espera (pending)",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        { "expr": "hikaricp_connections_pending{service=~\"$service\"}", "legendFormat": "{{service}} ({{pool}})" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Kafka (saga por eventos)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Mensajes producidos por segundo",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
+      "targets": [
+        { "expr": "sum by (service) (rate(kafka_producer_record_send_total{service=~\"$service\"}[1m]))", "legendFormat": "{{service}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Mensajes consumidos por segundo",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
+      "targets": [
+        { "expr": "sum by (service) (rate(kafka_consumer_fetch_manager_records_consumed_total{service=~\"$service\"}[1m]))", "legendFormat": "{{service}}" }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Caché (Redis / Spring Cache)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Aciertos vs fallos de caché por segundo",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 36 },
+      "targets": [
+        { "expr": "sum by (service, cache, result) (rate(cache_gets_total{service=~\"$service\"}[1m]))", "legendFormat": "{{service}} / {{cache}} / {{result}}" }
+      ]
+    }
+  ]
+}

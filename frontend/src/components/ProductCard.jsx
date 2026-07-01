@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
-import { money } from '../utils/format.js'
+import { money, optimizeImage } from '../utils/format.js'
 
 export default function ProductCard({ product }) {
   return (
     <Link to={`/producto/${product.id}`} className="card">
       <div className="card__media">
         {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} />
+          <img src={optimizeImage(product.imageUrl, 600)} alt={product.name} loading="lazy" />
         ) : (
           <span className="card__placeholder">{(product.name || '?').charAt(0)}</span>
         )}

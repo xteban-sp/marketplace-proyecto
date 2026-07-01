@@ -1,0 +1,39 @@
+# Esquema GraphQL del catálogo (product-service).
+# Convive con la API REST: GraphQL en /graphql, interfaz GraphiQL en /graphiql.
+
+type Product {
+    id: ID!
+    name: String!
+    description: String
+    price: Float!
+    stock: Int!
+    imageUrl: String
+    active: Boolean
+    sellerId: String
+    sellerName: String
+    categoryId: ID
+    categoryName: String
+}
+
+type Category {
+    id: ID!
+    name: String!
+    description: String
+}
+
+type Query {
+    "Lista de productos activos (con límite opcional, por defecto 50)."
+    products(limit: Int): [Product!]!
+
+    "Un producto por su ID."
+    product(id: ID!): Product
+
+    "Productos de una categoría."
+    productsByCategory(categoryId: ID!): [Product!]!
+
+    "Productos de un vendedor (UUID)."
+    productsBySeller(sellerId: String!): [Product!]!
+
+    "Todas las categorías."
+    categories: [Category!]!
+}

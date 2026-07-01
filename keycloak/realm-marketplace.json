@@ -1,0 +1,86 @@
+{
+  "realm": "marketplace",
+  "enabled": true,
+  "displayName": "Marketplace Universitario",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "accessTokenLifespan": 3600,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      { "name": "USER",   "description": "Usuario comprador" },
+      { "name": "SELLER", "description": "Vendedor" },
+      { "name": "ADMIN",  "description": "Administrador" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "marketplace-frontend",
+      "name": "Frontend SPA (React)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost/*",
+        "http://localhost:5173/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost",
+        "http://localhost:5173",
+        "http://localhost:3000"
+      ],
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "marketplace-api",
+      "name": "API Gateway / Resource Servers",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "marketplace-api-secret",
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "admin-kc",
+      "email": "admin-kc@upeu.edu.pe",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "Keycloak",
+      "credentials": [
+        { "type": "password", "value": "Admin12345!", "temporary": false }
+      ],
+      "realmRoles": ["ADMIN", "USER"]
+    },
+    {
+      "username": "vendedor-kc",
+      "email": "vendedor-kc@upeu.edu.pe",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Vendedor",
+      "lastName": "Demo",
+      "credentials": [
+        { "type": "password", "value": "Password1!", "temporary": false }
+      ],
+      "realmRoles": ["SELLER", "USER"]
+    },
+    {
+      "username": "comprador-kc",
+      "email": "comprador-kc@upeu.edu.pe",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Comprador",
+      "lastName": "Demo",
+      "credentials": [
+        { "type": "password", "value": "Password1!", "temporary": false }
+      ],
+      "realmRoles": ["USER"]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../cart/CartContext.jsx'
-import { money } from '../utils/format.js'
+import { money, optimizeImage } from '../utils/format.js'
 
 export default function Cart() {
   const { items, remove, setQty, total, clear } = useCart()
@@ -25,7 +25,7 @@ export default function Cart() {
         {items.map((i) => (
           <div className="cartline" key={i.id}>
             <div className="cartline__media">
-              {i.imageUrl ? <img src={i.imageUrl} alt={i.name} /> : <span>{(i.name || '?').charAt(0)}</span>}
+              {i.imageUrl ? <img src={optimizeImage(i.imageUrl, 160)} alt={i.name} loading="lazy" /> : <span>{(i.name || '?').charAt(0)}</span>}
             </div>
             <div className="cartline__info">
               <Link to={`/producto/${i.id}`} className="cartline__name">{i.name}</Link>

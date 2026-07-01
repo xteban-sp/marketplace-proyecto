@@ -38,7 +38,11 @@ public class SecurityConfig {
                                 "/auth/validate", "/api/auth/validate",
                                 "/auth/verify", "/api/auth/verify",
                                 "/auth/health/external", "/api/auth/health/external").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**", "/v3/api-docs.yaml",
+                                "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Actuator libre (health + métricas que lee Prometheus)
+                        .requestMatchers("/actuator/**").permitAll()
                         // Todo lo demás (incluye /users/**, /users/{u}/seller, etc.) requiere JWT
                         .anyRequest().authenticated()
                 )
