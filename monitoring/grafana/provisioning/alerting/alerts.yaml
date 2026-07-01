@@ -1,0 +1,111 @@
+# Reglas de alerta provisionadas (Grafana Unified Alerting).
+# Aparecen en Alerting → Alert rules y se ponen en rojo (Firing) cuando se cumplen.
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Marketplace
+    folder: Alertas Marketplace
+    interval: 1m
+    rules:
+      # ---- 1) Un servicio está caído (up < 1) ----
+      - uid: mp-service-down
+        title: Servicio caído
+        condition: C
+        for: 1m
+        noDataState: NoData
+        execErrState: Error
+        labels: { severity: critical }
+        annotations:
+          summary: "Un microservicio dejó de responder a Prometheus"
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              datasource: { type: prometheus, uid: prometheus }
+              expr: 'min by (service) (up{job="spring-microservices"})'
+              instant: true
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+                  operator: { type: and }
+                  query: { params: [C] }
+                  reducer: { type: last }
+                  type: query
+              refId: C
+
+      # ---- 2) Latencia HTTP media alta (> 1 s) ----
+      - uid: mp-high-latency
+        title: Latencia HTTP alta
+        condition: C
+        for: 2m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "Latencia media de peticiones por encima de 1 s"
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              datasource: { type: prometheus, uid: prometheus }
+              expr: 'sum by (service) (rate(http_server_requests_seconds_sum[5m])) / sum by (service) (rate(http_server_requests_seconds_count[5m]))'
+              instant: true
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [1] }
+                  operator: { type: and }
+                  query: { params: [C] }
+                  reducer: { type: last }
+                  type: query
+              refId: C
+
+      # ---- 3) Errores HTTP 5xx (> 0.2 req/s) ----
+      - uid: mp-http-5xx
+        title: Errores 5xx elevados
+        condition: C
+        for: 1m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "Tasa de respuestas 5xx por encima del umbral"
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prometheus
+            model:
+              datasource: { type: prometheus, uid: prometheus }
+              expr: 'sum by (service) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))'
+              instant: true
+              refId: A
+          - refId: C
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - evaluator: { type: gt, params: [0.2] }
+                  operator: { type: and }
+                  query: { params: [C] }
+                  reducer: { type: last }
+                  type: query
+              refId: C

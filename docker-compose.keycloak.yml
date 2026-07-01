@@ -1,0 +1,24 @@
+# =====================================================================
+# Keycloak — Identity Provider (OPCIONAL y AISLADO).
+# No reemplaza el JWT actual; se levanta aparte para demostrarlo/integrarlo.
+#
+# Levantar SOLO Keycloak junto al stack:
+#   docker compose -f docker-compose.prod.yml -f docker-compose.keycloak.yml up -d keycloak
+#
+# Consola admin: http://localhost:8180  (admin / admin)
+# Realm importado: "marketplace" (roles USER/SELLER/ADMIN + usuarios demo).
+# =====================================================================
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak/realm-marketplace.json:/opt/keycloak/data/import/realm-marketplace.json:ro
+    ports:
+      - "8180:8080"   # Consola: http://localhost:8180
+    networks: [marketplace-net]

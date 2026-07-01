@@ -1,0 +1,29 @@
+# =====================================================================
+# Override para DEMOSTRAR BALANCEO DE CARGA.
+# Se usa JUNTO con el compose principal:
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.scale.yml up -d \
+#       --scale api-gateway=3 --scale product-service=3
+#
+# Qué añade/cambia:
+#  - nginx: balanceador por delante de las réplicas de api-gateway (puerto 8090).
+#  - product-service / api-gateway: quita el puerto fijo de host para poder
+#    escalar varias réplicas sin chocar de puerto.
+# =====================================================================
+services:
+  # Quitamos el mapeo de puerto fijo para permitir múltiples réplicas.
+  product-service:
+    ports: !reset []
+
+  api-gateway:
+    ports: !reset []
+
+  nginx-lb:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8090:80"   # Entra por aquí: http://localhost:8090/api/productos
+    depends_on: [api-gateway]
+    networks: [marketplace-net]
