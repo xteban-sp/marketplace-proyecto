@@ -89,6 +89,13 @@ services:
     volumes: [postgres_review_data:/var/lib/postgresql/data]
     networks: [marketplace-net]
 
+  postgres-report:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_DB: report_db, POSTGRES_USER: report_user, POSTGRES_PASSWORD: report_pass }
+    volumes: [postgres_report_data:/var/lib/postgresql/data]
+    networks: [marketplace-net]
+
   mysql-product:
     image: mysql:8.4
     restart: unless-stopped
@@ -244,6 +251,20 @@ services:
     depends_on: [config-service, postgres-review, kafka]
     networks: [marketplace-net]
 
+  report-service:
+    build: ./report-service
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-report:5432/report_db
+      SPRING_DATASOURCE_USERNAME: report_user
+      SPRING_DATASOURCE_PASSWORD: report_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8089:8089"   # Swagger: http://localhost:8089/swagger-ui.html
+    depends_on: [config-service, postgres-report, kafka]
+    networks: [marketplace-net]
+
   api-gateway:
     build: ./api-gateway
     restart: unless-stopped
@@ -336,6 +357,7 @@ volumes:
   postgres_notification_data:
   postgres_recommendation_data:
   postgres_review_data:
+  postgres_report_data:
   mysql_product_data:
   mysql_payment_data:
   prometheus_data:
