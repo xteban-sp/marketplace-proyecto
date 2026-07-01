@@ -17,9 +17,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        pe.edu.upeu.auth_service.entity.User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        // 'login' puede ser el username O el correo: se acepta cualquiera de los dos.
+        pe.edu.upeu.auth_service.entity.User user = userRepository.findByUsernameOrEmail(login, login)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + login));
 
         // Convertir roles (Strings) a autoridades de Spring Security
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();

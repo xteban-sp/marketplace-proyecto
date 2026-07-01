@@ -172,7 +172,8 @@ public class AuthController {
                     .body(new AuthResponse(null, null, null, "Autenticación fallida: " + e.getMessage()));
         }
 
-        User user = userRepository.findByUsername(request.getUsername())
+        // El campo puede venir como usuario O como correo: se busca por ambos.
+        User user = userRepository.findByUsernameOrEmail(request.getUsername(), request.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Set<String> safeRoles = ensureUserHasAtLeastOneRole(user);

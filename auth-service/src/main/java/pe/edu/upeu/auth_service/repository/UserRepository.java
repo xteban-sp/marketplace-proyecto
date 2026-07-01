@@ -13,6 +13,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
 
+    // Login flexible: por usuario O por correo (se pasa el mismo valor a ambos).
+    Optional<User> findByUsernameOrEmail(String username, String email);
+
     // Token de verificación de cuenta
     Optional<User> findByVerificationToken(String verificationToken);
 
