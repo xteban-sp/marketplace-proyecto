@@ -35,8 +35,10 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/api-docs.yaml"
                         ).permitAll()
-                        // Actuator libre
+                        // Actuator libre (incluye /actuator/prometheus para métricas)
                         .requestMatchers("/actuator/**").permitAll()
+                        // GraphQL: consola GraphiQL y endpoint de consultas (catálogo de solo lectura)
+                        .requestMatchers("/graphql/**", "/graphiql/**").permitAll()
                         // Todo lo demás requiere JWT válido
                         .anyRequest().authenticated()
                 );

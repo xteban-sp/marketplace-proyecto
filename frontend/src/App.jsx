@@ -11,6 +11,7 @@ import EditProduct from './pages/EditProduct.jsx'
 import MyProducts from './pages/MyProducts.jsx'
 import BecomeSeller from './pages/BecomeSeller.jsx'
 import Cart from './pages/Cart.jsx'
+import Notifications from './pages/Notifications.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 function ProtectedRoute({ children }) {
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/" element={<ProtectedRoute><Catalog /></ProtectedRoute>} />
           <Route path="/producto/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
           <Route path="/carrito" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/notificaciones" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/vender" element={<ProtectedRoute><BecomeSeller /></ProtectedRoute>} />
           <Route path="/publicar" element={<SellerRoute><NewProduct /></SellerRoute>} />
           <Route path="/mis-productos" element={<SellerRoute><MyProducts /></SellerRoute>} />

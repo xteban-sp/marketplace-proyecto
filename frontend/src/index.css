@@ -708,6 +708,84 @@ img { display: block; max-width: 100%; }
 .footer__year { margin-left: auto; }
 
 /* ===========================================================
+   Notificaciones
+   =========================================================== */
+.notiflist { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.4rem; }
+.notif {
+  display: flex; align-items: flex-start; gap: 0.85rem; text-align: left; width: 100%;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 0.9rem 1rem; cursor: pointer;
+  font: inherit; color: inherit; transition: box-shadow var(--t-fast), border-color var(--t-fast);
+}
+.notif:hover { box-shadow: var(--shadow-sm); border-color: var(--color-border-strong); }
+.notif--unread { background: var(--color-accent-soft); border-color: var(--color-accent-ring); }
+.notif__icon { font-size: 1.35rem; line-height: 1.2; }
+.notif__body { display: flex; flex-direction: column; gap: 0.12rem; flex: 1; }
+.notif__title { font-weight: 600; color: var(--color-text); }
+.notif__msg { color: var(--color-text-soft); font-size: 0.92rem; }
+.notif__time { color: var(--color-muted); font-size: 0.78rem; margin-top: 0.2rem; }
+.notif__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-accent); margin-top: 0.45rem; flex-shrink: 0; }
+
+/* ===========================================================
+   Modo oscuro (se activa con data-theme="dark" en <html>)
+   =========================================================== */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #0f1115;
+  --color-bg-subtle: #15171c;
+  --color-surface: #16181d;
+  --color-surface-2: #1c1f26;
+  --color-text: #e9eaf0;
+  --color-text-soft: #b9bcc7;
+  --color-muted: #7e818d;
+  --color-border: #262932;
+  --color-border-strong: #353944;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 26%, #16181d);
+  --color-accent-soft-2: color-mix(in srgb, var(--color-accent) 34%, #16181d);
+  --color-danger-soft: color-mix(in srgb, var(--color-danger) 24%, #16181d);
+  --color-success-soft: color-mix(in srgb, var(--color-success) 22%, #16181d);
+}
+
+/* ===========================================================
+   Toasts (avisos flotantes)
+   =========================================================== */
+.toasts {
+  position: fixed; bottom: 1.2rem; right: 1.2rem; z-index: 1000;
+  display: flex; flex-direction: column; gap: 0.6rem;
+}
+.toast {
+  background: var(--color-text); color: var(--color-bg);
+  padding: 0.7rem 1.05rem; border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); font-weight: 600; font-size: 0.9rem;
+  animation: toast-in 0.22s var(--ease-out);
+}
+.toast--error { background: var(--color-danger); color: #fff; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ===========================================================
+   Botón de ícono (toggle de tema) + barra de categorías
+   =========================================================== */
+.nav__icon-btn {
+  background: none; border: 1px solid var(--color-border); border-radius: var(--radius-pill);
+  width: 36px; height: 36px; cursor: pointer; font-size: 1rem; line-height: 1;
+  display: grid; place-items: center; color: inherit;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+.nav__icon-btn:hover { border-color: var(--color-border-strong); background: var(--color-bg-subtle); }
+
+.filters__search--hero { width: 100%; max-width: 520px; margin-top: 1.2rem; padding: 0.85rem 1.1rem; font-size: 1rem; }
+
+.catbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.6rem 0 1.2rem; flex-wrap: wrap; }
+.chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--color-border-strong); background: var(--color-surface); color: var(--color-text-soft);
+  padding: 0.4rem 0.9rem; border-radius: var(--radius-pill); cursor: pointer;
+  font: inherit; font-size: 0.86rem; font-weight: 600; transition: all var(--t-fast);
+}
+.chip:hover { border-color: var(--color-accent); color: var(--color-text); }
+.chip--active { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-contrast); }
+
+/* ===========================================================
    Responsive
    =========================================================== */
 @media (max-width: 860px) {

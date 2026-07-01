@@ -1,10 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { useCart } from '../cart/CartContext.jsx'
+import { useNotifications } from '../notifications/NotificationsContext.jsx'
+import { useTheme } from '../theme/ThemeContext.jsx'
 
 export default function Navbar() {
   const { user, logout, hasRole } = useAuth()
   const { count } = useCart()
+  const { unread } = useNotifications()
+  const { theme, toggle } = useTheme()
   const navigate = useNavigate()
   const canSell = hasRole('SELLER') || hasRole('ADMIN')
 
@@ -33,6 +37,15 @@ export default function Navbar() {
         ) : (
           <Link to="/vender" className="btn btn--ghost nav__sell">Vender</Link>
         )}
+
+        <button className="nav__icon-btn" onClick={toggle} aria-label="Cambiar tema" title="Cambiar tema">
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
+        <Link to="/notificaciones" className="nav__cart" aria-label="Notificaciones">
+          🔔
+          {unread > 0 && <span className="nav__cart-badge">{unread}</span>}
+        </Link>
 
         <Link to="/carrito" className="nav__cart" aria-label="Carrito">
           🛒

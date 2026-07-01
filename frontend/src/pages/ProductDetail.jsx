@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import api, { errorMessage } from '../api/client.js'
 import { useCart } from '../cart/CartContext.jsx'
-import { money } from '../utils/format.js'
+import { useToast } from '../toast/ToastContext.jsx'
+import { money, optimizeImage } from '../utils/format.js'
 
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { add } = useCart()
+  const toast = useToast()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -16,6 +18,7 @@ export default function ProductDetail() {
   function addToCart() {
     add(product, 1)
     setAdded(true)
+    toast('Agregado al carrito ✓')
     setTimeout(() => setAdded(false), 1500)
   }
 
@@ -43,7 +46,7 @@ export default function ProductDetail() {
       <div className="detail">
         <div className="detail__media">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} />
+            <img src={optimizeImage(product.imageUrl, 900)} alt={product.name} />
           ) : (
             <span className="detail__placeholder">{(product.name || '?').charAt(0)}</span>
           )}

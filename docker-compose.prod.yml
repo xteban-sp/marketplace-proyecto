@@ -9,7 +9,13 @@ x-common-env: &common-env
   CONFIG_SERVER_URL: http://config-service:8888
   EUREKA_DEFAULT_ZONE: http://eureka-server:8761/eureka
   EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
-  JWT_SECRET: ${JWT_SECRET}
+  JWT_SECRET: ${JWT_SECRET:-clave_secreta_dev_marketplace_2026_minimo_32_chars}
+  # Expone métricas para Prometheus (sobreescribe la config de cada servicio).
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+  MANAGEMENT_METRICS_TAGS_APPLICATION: ${COMPOSE_PROJECT_NAME:-marketplace}
+  # Trazas distribuidas → Zipkin (muestrea el 100% para la demo).
+  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
 
 services:
   # ---------------- Infraestructura ----------------
@@ -131,6 +137,8 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       APP_FRONTEND_URL: ${PUBLIC_URL:-http://localhost}
       APP_VERIFY_BASE_URL: ${PUBLIC_URL:-http://localhost}
+    ports:
+      - "8081:8081"   # Swagger: http://localhost:8081/swagger-ui.html
     depends_on: [config-service, postgres-auth]
     networks: [marketplace-net]
 
@@ -143,6 +151,8 @@ services:
       SPRING_DATASOURCE_USERNAME: product_user
       SPRING_DATASOURCE_PASSWORD: product_pass
       SPRING_DATA_REDIS_HOST: redis
+    ports:
+      - "8082:8082"   # Swagger: http://localhost:8082/swagger-ui.html
     depends_on: [config-service, mysql-product, redis]
     networks: [marketplace-net]
 
@@ -155,6 +165,8 @@ services:
       SPRING_DATASOURCE_USERNAME: order_user
       SPRING_DATASOURCE_PASSWORD: order_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8083:8083"   # Swagger: http://localhost:8083/swagger-ui.html
     depends_on: [config-service, postgres-order, kafka]
     networks: [marketplace-net]
 
@@ -171,6 +183,8 @@ services:
       MERCADOPAGO_SUCCESS_URL: ${PUBLIC_URL:-http://localhost}/pago/exito
       MERCADOPAGO_PENDING_URL: ${PUBLIC_URL:-http://localhost}/pago/pendiente
       MERCADOPAGO_FAILURE_URL: ${PUBLIC_URL:-http://localhost}/pago/error
+    ports:
+      - "8084:8084"   # Swagger: http://localhost:8084/swagger-ui.html
     depends_on: [config-service, mysql-payment, kafka]
     networks: [marketplace-net]
 
@@ -182,6 +196,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-messaging:5432/messaging_db
       SPRING_DATASOURCE_USERNAME: messaging_user
       SPRING_DATASOURCE_PASSWORD: messaging_pass
+    ports:
+      - "8085:8085"   # Swagger: http://localhost:8085/swagger-ui.html
     depends_on: [config-service, postgres-messaging]
     networks: [marketplace-net]
 
@@ -194,6 +210,8 @@ services:
       SPRING_DATASOURCE_USERNAME: notification_user
       SPRING_DATASOURCE_PASSWORD: notification_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8086:8086"   # Swagger: http://localhost:8086/swagger-ui.html
     depends_on: [config-service, postgres-notification, kafka]
     networks: [marketplace-net]
 
@@ -207,6 +225,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: recommendation_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SPRING_DATA_REDIS_HOST: redis
+    ports:
+      - "8087:8087"   # Swagger: http://localhost:8087/swagger-ui.html
     depends_on: [config-service, postgres-recommendation, kafka, redis]
     networks: [marketplace-net]
 
@@ -219,6 +239,8 @@ services:
       SPRING_DATASOURCE_USERNAME: review_user
       SPRING_DATASOURCE_PASSWORD: review_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8088:8088"   # Swagger: http://localhost:8088/swagger-ui.html
     depends_on: [config-service, postgres-review, kafka]
     networks: [marketplace-net]
 
@@ -228,7 +250,11 @@ services:
     environment:
       <<: *common-env
       CORS_ALLOWED_ORIGINS: ${PUBLIC_URL:-http://localhost}
-    depends_on: [config-service, eureka-server]
+      SPRING_DATA_REDIS_HOST: redis          # para el rate limiting distribuido
+      RATELIMIT_ENABLED: ${RATELIMIT_ENABLED:-true}
+      RATELIMIT_CAPACITY: ${RATELIMIT_CAPACITY:-100}
+      RATELIMIT_WINDOW_SECONDS: ${RATELIMIT_WINDOW_SECONDS:-60}
+    depends_on: [config-service, eureka-server, redis]
     networks: [marketplace-net]
 
   # ---------------- Frontend + HTTPS (Caddy) ----------------
@@ -245,6 +271,60 @@ services:
     depends_on: [api-gateway]
     networks: [marketplace-net]
 
+  # ---------------- Monitoreo (Prometheus + Grafana) ----------------
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"   # UI de Prometheus: http://localhost:9090
+    networks: [marketplace-net]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"   # UI de Grafana: http://localhost:3001  (admin/admin)
+    depends_on: [prometheus]
+    networks: [marketplace-net]
+
+  # ---------------- Trazas distribuidas (Zipkin) ----------------
+  zipkin:
+    image: openzipkin/zipkin:3
+    restart: unless-stopped
+    ports:
+      - "9411:9411"   # UI de Zipkin: http://localhost:9411
+    networks: [marketplace-net]
+
+  # ---------------- Logs centralizados (Loki + Promtail) ----------------
+  loki:
+    image: grafana/loki:3.1.1
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"   # API de Loki (se consulta desde Grafana)
+    networks: [marketplace-net]
+
+  promtail:
+    image: grafana/promtail:3.1.1
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yaml
+    volumes:
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: [loki]
+    networks: [marketplace-net]
+
 networks:
   marketplace-net:
     driver: bridge
@@ -258,3 +338,5 @@ volumes:
   postgres_review_data:
   mysql_product_data:
   mysql_payment_data:
+  prometheus_data:
+  grafana_data:

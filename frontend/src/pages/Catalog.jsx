@@ -4,6 +4,12 @@ import api, { errorMessage } from '../api/client.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 
+const SORTS = {
+  recientes: 'createdAt,desc',
+  'precio-asc': 'price,asc',
+  'precio-desc': 'price,desc',
+}
+
 export default function Catalog() {
   const { hasRole } = useAuth()
   const navigate = useNavigate()
@@ -12,23 +18,19 @@ export default function Catalog() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [name, setName] = useState('')
-  // Término ya "debounced": es el que realmente dispara la petición a la API.
   const [debouncedName, setDebouncedName] = useState('')
   const [categoryId, setCategoryId] = useState('')
+  const [sort, setSort] = useState('recientes')
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Carga las categorías una vez.
   useEffect(() => {
-    api
-      .get('/api/categorias')
-      .then((res) => setCategories(res.data || []))
-      .catch(() => setCategories([]))
+    api.get('/api/categorias').then((res) => setCategories(res.data || [])).catch(() => setCategories([]))
   }, [])
 
-  // Debounce (~300ms): retrasa la búsqueda hasta que el usuario deja de teclear.
+  // Debounce (~300 ms) del buscador.
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedName(name.trim())
@@ -37,14 +39,13 @@ export default function Catalog() {
     return () => clearTimeout(t)
   }, [name])
 
-  // Carga productos cuando cambian filtros (debounced) o página.
   useEffect(() => {
     let active = true
     setLoading(true)
     setError('')
     const hasFilter = debouncedName || categoryId
     const url = hasFilter ? '/api/productos/search' : '/api/productos'
-    const params = { page, size: 12 }
+    const params = { page, size: 12, sort: SORTS[sort] }
     if (debouncedName) params.name = debouncedName
     if (categoryId) params.categoryId = categoryId
 
@@ -52,9 +53,8 @@ export default function Catalog() {
       .get(url, { params })
       .then((res) => {
         if (!active) return
-        const data = res.data
-        setProducts(data.content || [])
-        setTotalPages(data.totalPages ?? 0)
+        setProducts(res.data.content || [])
+        setTotalPages(res.data.totalPages ?? 0)
       })
       .catch((err) => {
         if (!active) return
@@ -66,14 +66,11 @@ export default function Catalog() {
     return () => {
       active = false
     }
-  }, [debouncedName, categoryId, page])
+  }, [debouncedName, categoryId, sort, page])
 
-  function onSearchChange(e) {
-    setName(e.target.value)
-  }
-  function onCategoryChange(e) {
+  function selectCategory(id) {
     setPage(0)
-    setCategoryId(e.target.value)
+    setCategoryId(id)
   }
 
   return (
@@ -93,23 +90,45 @@ export default function Catalog() {
       <section className="hero">
         <h1 className="hero__title">Explora la feria</h1>
         <p className="hero__sub">Encuentra lo que buscas entre tus compañeros.</p>
-        <div className="filters">
-          <input
-            className="filters__search"
-            value={name}
-            onChange={onSearchChange}
-            placeholder="Buscar producto…"
-          />
-          <select className="filters__select" value={categoryId} onChange={onCategoryChange}>
-            <option value="">Todas las categorías</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <input
+          className="filters__search filters__search--hero"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Buscar producto…"
+        />
       </section>
+
+      <div className="catbar">
+        <div className="chips">
+          <button
+            className={`chip ${!categoryId ? 'chip--active' : ''}`}
+            onClick={() => selectCategory('')}
+          >
+            Todas
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              className={`chip ${categoryId === String(c.id) ? 'chip--active' : ''}`}
+              onClick={() => selectCategory(String(c.id))}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+        <select
+          className="filters__select"
+          value={sort}
+          onChange={(e) => {
+            setPage(0)
+            setSort(e.target.value)
+          }}
+        >
+          <option value="recientes">Más recientes</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
 
       {error && <div className="alert alert--page">{error}</div>}
 
