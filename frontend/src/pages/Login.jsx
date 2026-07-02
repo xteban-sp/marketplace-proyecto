@@ -41,12 +41,7 @@ export default function Login() {
                 <div className="auth__art-bg" />
                 <div className="auth__art-content">
                     <div className="auth__art-logo">
-                        <svg viewBox="0 0 38 38" fill="none" width="38" height="38">
-                            <rect width="38" height="38" rx="10" fill="var(--color-accent)" />
-                            <path d="M11 11h16M11 19h10M11 27h13" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-                            <circle cx="27" cy="23" r="5" stroke="#fff" strokeWidth="2" />
-                            <path d="M27 21v2.5l1.5 1.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                        <img src="/frontend/src/image/LogoCompraPe.png" alt="CompraPe"/>
                         <span className="auth__art-logo-name">CompraPe</span>
                     </div>
                     <p className="auth__art-kicker">Tu mercado segurisisimo</p>

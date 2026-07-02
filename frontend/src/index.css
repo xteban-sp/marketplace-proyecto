@@ -312,7 +312,7 @@ img { display: block; max-width: 100%; }
     position: absolute;
     inset: 0;
     background:
-            url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1400&q=80&auto=format')
+            url('image/imagen1.jpg')
             center / cover no-repeat;
     filter: brightness(0.33) saturate(0.6);
     transition: filter 0.5s ease;
@@ -321,7 +321,7 @@ img { display: block; max-width: 100%; }
 
 .auth__art--alt .auth__art-bg {
     background-image:
-            url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1400&q=80&auto=format');
+            url('image/image2.jpg');
 }
 
 .auth__art::after {
