@@ -285,55 +285,148 @@ img { display: block; max-width: 100%; }
 .nav__username { color: var(--color-text); }
 
 /* ===========================================================
-   Auth (login / registro)
+   Fuente display para el panel izquierdo
    =========================================================== */
-.auth { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; }
-.auth__art {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(120% 120% at 0% 0%, var(--color-accent-hover), transparent 55%),
-    var(--color-accent);
-  color: #fff;
-  padding: 4rem 3.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.1rem;
-}
-.auth__art--alt {
-  background:
-    radial-gradient(120% 120% at 100% 100%, color-mix(in srgb, var(--color-accent) 70%, black), transparent 55%),
-    var(--color-accent);
-}
-.auth__art::after {
-  content: '';
-  position: absolute;
-  right: -120px; bottom: -120px;
-  width: 360px; height: 360px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.22);
-}
-.auth__art::before {
-  content: '';
-  position: absolute;
-  right: -60px; bottom: -60px;
-  width: 220px; height: 220px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.16);
-}
-.auth__art > * { position: relative; z-index: 1; animation: fade-in-up 0.6s var(--ease-out) both; }
-.auth__art-kicker { text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.72rem; font-weight: 600; opacity: 0.9; }
-.auth__art-title { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em; }
-.auth__art-text { max-width: 30ch; opacity: 0.92; font-size: 1.02rem; }
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 
-.auth__panel { display: grid; place-items: center; padding: 2rem; background: var(--color-bg); }
-.auth__box { width: 100%; max-width: 380px; animation: fade-in-up 0.5s var(--ease-out) both; }
-.auth__brand { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.04em; margin: 0 0 1.75rem; }
-.auth__heading { font-size: 1.7rem; margin-bottom: 0.4rem; }
-.auth__switch { margin-top: 1.5rem; color: var(--color-muted); font-size: 0.9rem; }
+/* ===========================================================
+   Auth (login / registro) — Split con imagen de fondo
+   =========================================================== */
+.auth {
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    min-height: 100vh;
+}
+
+/* ── Panel izquierdo ── */
+.auth__art {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3.5rem;
+}
+
+.auth__art-bg {
+    position: absolute;
+    inset: 0;
+    background:
+            url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1400&q=80&auto=format')
+            center / cover no-repeat;
+    filter: brightness(0.33) saturate(0.6);
+    transition: filter 0.5s ease;
+}
+.auth__art:hover .auth__art-bg { filter: brightness(0.38) saturate(0.6); }
+
+.auth__art--alt .auth__art-bg {
+    background-image:
+            url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1400&q=80&auto=format');
+}
+
+.auth__art::after {
+    content: '';
+    position: absolute;
+    inset: 35% 0 0 0;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,.92));
+    pointer-events: none;
+}
+
+.auth__art-content {
+    position: relative;
+    z-index: 1;
+}
+
+.auth__art-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+}
+.auth__art-logo-name {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.6rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+.auth__art-kicker {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-bottom: 0.9rem;
+}
+
+.auth__art-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: clamp(2.4rem, 1rem + 4vw, 4.5rem);
+    font-style: italic;
+    line-height: 1.07;
+    color: #fff;
+    margin: 0 0 1.1rem;
+    max-width: 14ch;
+    letter-spacing: -0.01em;
+}
+
+.auth__art-text {
+    font-size: 0.98rem;
+    color: rgba(255,255,255,.52);
+    max-width: 38ch;
+    line-height: 1.65;
+}
+
+/* ── Panel derecho ── */
+.auth__panel {
+    display: grid;
+    place-items: center;
+    padding: 2.5rem 2rem;
+    background: var(--color-bg);
+    border-left: 1px solid var(--color-border);
+}
+
+.auth__box {
+    width: 100%;
+    max-width: 360px;
+    animation: fade-in-up 0.5s var(--ease-out) both;
+}
+
+.auth__eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+
+.auth__heading {
+    font-size: 1.9rem;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.025em;
+}
+
+.auth__sub {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+.auth__switch {
+    margin-top: 1.5rem;
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    text-align: center;
+}
 .auth__switch a { color: var(--color-accent); font-weight: 600; }
 .auth__switch a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+    .auth { grid-template-columns: 1fr; }
+    .auth__art { display: none; }
+    .auth__panel { border-left: none; padding: 2rem 1.25rem; }
+}
 
 /* ===========================================================
    Formularios
