@@ -47,14 +47,14 @@ export default function Login() {
                             <circle cx="27" cy="23" r="5" stroke="#fff" strokeWidth="2" />
                             <path d="M27 21v2.5l1.5 1.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <span className="auth__art-logo-name">Feria</span>
+                        <span className="auth__art-logo-name">CompraPe</span>
                     </div>
-                    <p className="auth__art-kicker">Marketplace universitario</p>
+                    <p className="auth__art-kicker">Tu mercado segurisisimo</p>
                     <h1 className="auth__art-title">
-                        Lo que necesitas,<br />de quien está al lado.
+                        Cómprale a tu causa,<br />vende a tu equipo osiosiosi .
                     </h1>
                     <p className="auth__art-text">
-                        Libros, electrónica y más — intercambia con otros estudiantes de tu universidad.
+                        Intercambia fácil en tu universidad.
                     </p>
                 </div>
             </section>
@@ -74,7 +74,7 @@ export default function Login() {
                             <input
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                placeholder="tu_usuario"
+                                placeholder="Escribe aqui"
                                 autoComplete="username"
                                 required
                                 autoFocus
@@ -86,7 +86,7 @@ export default function Login() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
+                                placeholder="Escribe aqui"
                                 autoComplete="current-password"
                                 required
                             />
